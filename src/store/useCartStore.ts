@@ -52,7 +52,7 @@ export const useCartStore = create<CartStore>()(
           // Fetch product details from the product store
           const product = useProductStore
             .getState()
-            .products.find((p) => p.databaseId === itemId);
+            .products.find((p) => p.id === itemId);
 
           if (!product) {
             console.warn(`Product with ID ${itemId} not found in ProductStore`);

@@ -104,11 +104,11 @@ const Cart = () => {
                                     {cartItem.productDetails.price}
                                   </p>
                                 </div>
-                                <p className="mt-1 text-sm text-gray-500">
+                                {/* <p className="mt-1 text-sm text-gray-500">
                                   {cartItem.productDetails.productCategories.nodes
                                     .map((cat) => cat.name)
                                     .join(", ")}
-                                </p>
+                                </p> */}
                               </div>
                               <div className="flex flex-1 items-end justify-between text-sm">
                                 <div className="flex items-center">

@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
 import {
   fetchAllProductSlugs,
   fetchProductBySlug,
-} from "@/services/productServices";
+} from "@/services/productServices-GQL";
+import { notFound } from "next/navigation";
 import SingleProductContent from "./SingleProductContent";
 
 // Generate static params for SSG
@@ -25,21 +25,20 @@ const SingleProductPage = async ({
 }) => {
   const { slug } = await params;
 
-  const singleProduct = await fetchProductBySlug(slug);
-  console.log("Fetched product data:", singleProduct); // Log for testing purposes
+  console.log("Single Product Slug:", slug); // Log for testing purposes
 
   // TESTING THE GEN PARAM FUNC
   // const slugs = await fetchAllProductSlugs();
   // console.log("Fetched product slugs:", slugs);
 
   // Handle 404 with ISR
-  if (!singleProduct) {
-    notFound();
-  }
+  // if (!singleProduct) {
+  //   notFound();
+  // }
 
   return (
     <div>
-      <SingleProductContent singleProduct={singleProduct} />
+      <SingleProductContent />
     </div>
   );
 };

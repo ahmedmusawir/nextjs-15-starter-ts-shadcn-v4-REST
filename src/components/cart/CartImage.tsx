@@ -20,9 +20,7 @@ const CartImage = ({ cartItem, imgHeight, imgWidth }: Props) => {
         </div>
       )}
       <Image
-        src={
-          cartItem.productDetails.image?.sourceUrl || "/placeholder-image.jpg"
-        } // Add a fallback placeholder if necessary
+        src={"/placeholder-image.jpg"} // Add a fallback placeholder if necessary
         alt={cartItem.productDetails.name || "Product Image"}
         width={imgWidth}
         height={imgHeight}

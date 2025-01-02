@@ -2,12 +2,21 @@ import Head from "next/head";
 import Page from "@/components/common/Page";
 import Row from "@/components/common/Row";
 import ProductList from "@/components/shop/ProductList";
-import { fetchPaginatedProducts } from "@/services/productServices";
+
+import { fetchInitialProducts } from "@/services/productServices";
+import NumberedPagination from "@/components/common/NumberedPagination";
+import ShopPageReset from "@/components/shop/ShopPageReset";
 
 const ShopPageContent = async () => {
+  const productsPerPage = 12;
   // Fetching the first 12 products
-  const initialProducts = await fetchPaginatedProducts(1, 12);
-  console.log("Fetched products:", initialProducts);
+  const { products, totalProducts } = await fetchInitialProducts(1, 12);
+
+  // console.log("PRODUCTS: [ShopPageContent]", products);
+  // console.log("TOTAL: [ShopPageContent]", totalProducts);
+
+  // Calculate total pages based on total products
+  const totalPages = Math.ceil(totalProducts / productsPerPage);
 
   return (
     <>
@@ -25,6 +34,7 @@ const ShopPageContent = async () => {
               <h2 className="text-2xl font-bold tracking-tight text-gray-900">
                 Trending products
               </h2>
+              <hr />
               <a
                 href="#"
                 className="hidden text-sm font-medium text-indigo-600 hover:text-indigo-500 md:block"
@@ -33,11 +43,19 @@ const ShopPageContent = async () => {
                 <span aria-hidden="true"> &rarr;</span>
               </a>
             </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-4 md:gap-y-0 lg:gap-x-8">
-              <ProductList initialProducts={initialProducts} />
+            <ShopPageReset
+              initialProducts={products}
+              totalProducts={totalProducts}
+            />
+            {/* <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-4 md:gap-y-0 lg:gap-x-8"> */}
+            <div className="">
+              <ProductList
+                initialProducts={products}
+                totalProducts={totalProducts}
+              />
             </div>
           </div>
+          <NumberedPagination totalPages={totalPages} />
         </div>
       </Page>
     </>
