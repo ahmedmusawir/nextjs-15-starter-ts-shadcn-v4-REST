@@ -1,10 +1,7 @@
-// Load environment variables for WooCommerce API credentials
-const WOOCOM_REST_API_URL = process.env.NEXT_PUBLIC_WOOCOM_REST_API_URL;
-const WOOCOM_CONSUMER_KEY = process.env.WOOCOM_CONSUMER_KEY;
-const WOOCOM_CONSUMER_SECRET = process.env.WOOCOM_CONSUMER_SECRET_KEY;
+import { Product } from "@/types/product";
 
 /**
- * Fetch Paginated Products
+ * Fetch Paginated Products [FROM CLIENT SIDE]
  *
  * This function fetches a paginated list of published products from the
  * custom API route (`/api/get-all-products`). The API route handles
@@ -52,9 +49,12 @@ export const fetchPaginatedProducts = async (
   return { products, totalProducts };
 };
 
-import { Product } from "@/types/product";
+// --------------------------- FETCH PAGINATED PRODUCTS CLIENT SIDE ENDS ----------------------------------------
+
+// --------------------------- FETCH INITIAL PRODUCTS START ----------------------------------------
 
 /**
+ *
  * Fetch Initial Products (SSR-Compatible)
  *
  * This function fetches the first page of published products directly from the
@@ -70,22 +70,17 @@ import { Product } from "@/types/product";
  * - Intended for server-side fetching during SSR or SSG.
  * - Uses environment variables for WooCommerce API credentials.
  */
+
+import { WOOCOM_REST_GET_ALL_PRODUCTS } from "@/rest-api/products";
+
 export const fetchInitialProducts = async (
   page: number = 1,
   perPage: number = 12
 ): Promise<{ products: Product[]; totalProducts: number }> => {
-  if (!WOOCOM_REST_API_URL || !WOOCOM_CONSUMER_KEY || !WOOCOM_CONSUMER_SECRET) {
-    throw new Error(
-      "Missing WooCommerce REST API credentials in environment variables."
-    );
-  }
-
-  // Construct the WooCommerce REST API URL with query parameters
-  const url = `${WOOCOM_REST_API_URL}products?per_page=${perPage}&page=${page}&consumer_key=${WOOCOM_CONSUMER_KEY}&consumer_secret=${WOOCOM_CONSUMER_SECRET}&orderby=date&order=asc&status=publish`;
+  // Construct the URL for the current page
+  const url = WOOCOM_REST_GET_ALL_PRODUCTS(page, perPage);
 
   try {
-    console.log("[fetchInitialProducts] Fetching products from:", url);
-
     // Fetch data from the WooCommerce REST API
     const response = await fetch(url, {
       method: "GET",
@@ -121,3 +116,225 @@ export const fetchInitialProducts = async (
     throw error;
   }
 };
+
+// --------------------------- FETCH INITIAL PRODUCTS ENDS ----------------------------------------
+
+// --------------------------- FETCH  ALL PRODUCT SLUGS STARTS ----------------------------------------
+
+/**
+ * Fetch All Product Slugs
+ *
+ * This function fetches all product slugs from the WooCommerce REST API in batches.
+ * It extracts only the `slug` field from the response and returns an array of slugs.
+ *
+ * @param {number} page - The starting page number for pagination (default is 1).
+ * @param {number} perPage - The number of products to fetch per batch (default is 100).
+ * @returns {Promise<string[]>} An array of product slugs.
+ * @throws {Error} If the request fails or the response is invalid.
+ *
+ * Note:
+ * - Designed for use in `generateStaticParams` to fetch slugs for SSG/ISR.
+ * - Combines results from multiple pages until all slugs are fetched.
+ */
+
+import { WOOCOM_REST_GET_ALL_PRODUCT_SLUGS } from "@/rest-api/products";
+
+export const fetchAllProductSlugs = async (
+  page: number = 1,
+  perPage: number = 100
+): Promise<string[]> => {
+  let allSlugs: string[] = [];
+  let hasNextPage = true;
+
+  try {
+    while (hasNextPage) {
+      // Construct the URL for the current page
+      const url = WOOCOM_REST_GET_ALL_PRODUCT_SLUGS(page, perPage);
+
+      // console.log(`[fetchAllProductSlugs] Fetching slugs from: ${url}`);
+
+      // Fetch data from the WooCommerce REST API
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          "[fetchAllProductSlugs] WooCommerce API Error:",
+          errorData
+        );
+        throw new Error(
+          `Failed to fetch product slugs: ${response.statusText}`
+        );
+      }
+
+      // Parse the response JSON
+      const products: Product[] = await response.json();
+
+      // Extract slugs and add them to the allSlugs array
+      const slugs = products.map((product) => product.slug);
+      allSlugs = [...allSlugs, ...slugs];
+
+      console.log(`[fetchAllProductSlugs] Page ${page} fetched:`, slugs);
+
+      // Check if there are more pages (based on the number of results returned)
+      hasNextPage = products.length === perPage;
+      page += 1; // Increment the page number for the next fetch
+    }
+
+    console.log("[fetchAllProductSlugs] Total slugs fetched:", allSlugs.length);
+
+    return allSlugs;
+  } catch (error) {
+    console.error("[fetchAllProductSlugs] Error fetching slugs:", error);
+    throw error;
+  }
+};
+
+// --------------------------- FETCH  ALL PRODUCT SLUGS ENDS ------------------------------------------
+
+// --------------------------- FETCH PRODUCT BY SLUG STARTS ------------------------------------------
+
+/**
+ * Fetch Product by Slug
+ *
+ * This function retrieves a single product from the WooCommerce REST API
+ * based on its slug. It uses the `WOOCOM_REST_GET_PRODUCT_BY_SLUG` endpoint
+ * to fetch the product data.
+ *
+ * @param {string} slug - The slug of the product to fetch.
+ * @returns {Promise<Product | null>} A single product object or null if not found.
+ * @throws {Error} If the request fails or the response is invalid.
+ *
+ * Note:
+ * - The slug is a unique identifier for a product, often derived from its name.
+ * - The response is filtered to return only the first matching product, if any.
+ * - Use this function to fetch data for product detail pages.
+ */
+
+import { WOOCOM_REST_GET_PRODUCT_BY_SLUG } from "@/rest-api/products";
+
+export const fetchProductBySlug = async (
+  slug: string
+): Promise<Product | null> => {
+  try {
+    // Construct the request URL for fetching the product by slug
+    const url = WOOCOM_REST_GET_PRODUCT_BY_SLUG(slug);
+
+    console.log("[fetchProductBySlug] Fetching product from:", url);
+
+    // Fetch data from the WooCommerce REST API
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("[fetchProductBySlug] WooCommerce API Error:", errorData);
+      throw new Error(
+        `Failed to fetch product by slug: ${response.statusText}`
+      );
+    }
+
+    // Parse the response JSON
+    const products = await response.json();
+
+    // WooCommerce returns an array even for a single slug, so we take the first item
+    const product = products.length > 0 ? products[0] : null;
+
+    console.log("[fetchProductBySlug] Product fetched successfully:", product);
+
+    return product;
+  } catch (error) {
+    console.error(
+      "[fetchProductBySlug] Error fetching product by slug:",
+      error
+    );
+    throw error;
+  }
+};
+
+// --------------------------- FETCH PRODUCT BY SLUG ENDS ----------------------------------------------------------------
+// --------------------------- FETCH PRODUCT VARIATIONS BY VARIATION IDs STARTS ------------------------------------------
+import { WOOCOM_REST_GET_VARIATION_BY_ID } from "@/rest-api/products";
+import { ProductVariation } from "@/types/product";
+import clsx from "clsx";
+
+/**
+ * Fetch Product Variations by IDs
+ *
+ * This function takes an array of WooCommerce variation IDs and fetches
+ * the details for each variation by calling the WooCommerce REST API.
+ * It processes the data and returns an array of variation objects with
+ * the necessary details for further use (e.g., pricing, attributes, stock).
+ *
+ * @param {number[]} variationIds - An array of WooCommerce variation IDs.
+ * @returns {Promise<Variation[]>} A promise that resolves to an array of variations.
+ * @throws {Error} If the fetch fails for any variation.
+ *
+ * Note:
+ * - Each variation ID is fetched independently to ensure modularity.
+ * - The function uses the REST endpoint for fetching individual variations.
+ */
+
+export const fetchProductVariationsById = async (
+  productId: number,
+  variationIds: number[]
+): Promise<ProductVariation[]> => {
+  try {
+    // Fetch all variations concurrently using Promise.all
+    const variations = await Promise.all(
+      variationIds.map(async (variationId) => {
+        const response = await fetch(
+          WOOCOM_REST_GET_VARIATION_BY_ID(productId, variationId),
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error(
+            `[fetchProductVariationsById] Failed to fetch variation ${variationId}:`,
+            await response.json()
+          );
+          throw new Error(`Failed to fetch variation ${variationId}`);
+        }
+
+        const variation = await response.json();
+        return {
+          id: variation.id,
+          price: variation.price,
+          sale_price: variation.sale_price,
+          regular_price: variation.regular_price,
+          attributes: variation.attributes, // Array of attributes (e.g., color, size)
+          stock_status: variation.stock_status,
+          sku: variation.sku,
+        };
+      })
+    );
+
+    console.log(
+      "[fetchProductVariationsById] Variations fetched successfully:",
+      variations
+    );
+    return variations;
+  } catch (error) {
+    console.error(
+      "[fetchProductVariationsById] Error fetching variations:",
+      error
+    );
+    throw error;
+  }
+};
+
+// --------------------------- FETCH PRODUCT VARIATIONS BY VARIATION IDs ENDS --------------------------------------------

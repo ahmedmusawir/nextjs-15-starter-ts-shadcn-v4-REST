@@ -41,32 +41,8 @@ export interface Product {
     options: string[];
   }>;
   variations: number[];
-  related_ids: number[];
-  upsell_ids: number[];
-  cross_sell_ids: number[];
   average_rating: string;
   rating_count: number;
   shipping_class_id: number;
   tax_class: string;
-}
-
-export interface ProductVariation {
-  id: number; // Unique ID of the variation
-  price: string; // Current price of the variation
-  regular_price: string; // Regular (non-sale) price
-  sale_price: string | null; // Sale price, if applicable
-  attributes: Array<{
-    id: number; // Attribute ID
-    name: string; // Attribute name (e.g., Color, Size)
-    option: string; // Selected option (e.g., Red, Medium)
-  }>; // Array of attributes specific to the variation
-  stock_status: "instock" | "outofstock" | "onbackorder"; // Stock status
-  sku: string | null; // SKU (if available)
-  stock_quantity?: number | null; // Stock quantity (optional, if available)
-  manage_stock?: boolean; // Whether stock is managed for this variation
-  image?: {
-    id: number; // ID of the image
-    src: string; // Image URL
-    alt: string; // Alt text for the image
-  }; // Featured image for the variation (optional)
 }

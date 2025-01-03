@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         hostname: "wordpress-1366765-5035928.cloudwaysapps.com", // Your headless WP backend
         pathname: "/**", // Allows all paths from this backend
       },
+      {
+        protocol: "https",
+        hostname: "tailwindui.com", // Your headless WP backend
+        pathname: "/**", // Allows all paths from this backend
+      },
     ],
   },
   staticPageGenerationTimeout: 120, // Increase static generation timeout to 120 seconds

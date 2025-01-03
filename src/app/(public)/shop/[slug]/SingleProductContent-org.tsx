@@ -1,5 +1,6 @@
 "use client";
 
+import { ProductSingle } from "@/types/single-product";
 import {
   Disclosure,
   DisclosureButton,
@@ -17,156 +18,106 @@ import { HeartIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import Image from "next/image";
 import { useCartStore } from "@/store/useCartStore";
-import { Product } from "@/types/product";
-import parse from "html-react-parser";
-import { fetchProductVariationsById } from "@/services/productServices";
-import clsx from "clsx";
 
-// const demoProduct = {
-//   name: "Zip Tote Basket",
-//   price: "$140",
-//   rating: 4,
-//   images: [
-//     {
-//       id: 1,
-//       name: "Angled view",
-//       src: "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-product-01.jpg",
-//       alt: "Angled front view with bag zipped and handles upright.",
-//     },
-//     {
-//       id: 2,
-//       name: "Angled view",
-//       src: "https://res.cloudinary.com/dyb0qa58h/image/upload/v1699357042/qmjhal0k7ygtcfvgea8u.jpg",
-//       alt: "Angled front view with bag zipped and handles upright.",
-//     },
-//     {
-//       id: 3,
-//       name: "Angled view",
-//       src: "https://res.cloudinary.com/dyb0qa58h/image/upload/v1699357113/kyuonuhab6uge4arosuo.jpg",
-//       alt: "Angled front view with bag zipped and handles upright.",
-//     },
-//     {
-//       id: 4,
-//       name: "Angled view",
-//       src: "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-product-01.jpg",
-//       alt: "Angled front view with bag zipped and handles upright.",
-//     },
-//     // More images...
-//   ],
-//   colors: [
-//     {
-//       name: "Washed Black",
-//       bgColor: "bg-gray-700",
-//       selectedColor: "ring-gray-700",
-//     },
-//     { name: "White", bgColor: "bg-white", selectedColor: "ring-gray-400" },
-//     {
-//       name: "Washed Gray",
-//       bgColor: "bg-gray-500",
-//       selectedColor: "ring-gray-500",
-//     },
-//   ],
-//   description: `
-//     <p>The Zip Tote Basket is the perfect midpoint between shopping tote and comfy backpack. With convertible straps, you can hand carry, should sling, or backpack this convenient and spacious bag. The zip top and durable canvas construction keeps your goods protected for all-day use.</p>
-//   `,
-//   details: [
-//     {
-//       name: "Variations IDs",
-//       items: [
-//         "Multiple strap configurations",
-//         "Spacious interior with top zip",
-//         "Leather handle and tabs",
-//         "Interior dividers",
-//         "Stainless strap loops",
-//         "Double stitched construction",
-//         "Water-resistant",
-//       ],
-//     },
-//     {
-//       name: "Related Product IDs",
-//       items: [
-//         "Multiple strap configurations",
-//         "Spacious interior with top zip",
-//         "Leather handle and tabs",
-//         "Interior dividers",
-//         "Stainless strap loops",
-//         "Double stitched construction",
-//         "Water-resistant",
-//       ],
-//     },
-//     {
-//       name: "Upsell IDs",
-//       items: [
-//         "Multiple strap configurations",
-//         "Spacious interior with top zip",
-//         "Leather handle and tabs",
-//         "Interior dividers",
-//         "Stainless strap loops",
-//         "Double stitched construction",
-//         "Water-resistant",
-//       ],
-//     },
-//     // More sections...
-//   ],
-// };
-
-const relatedProducts = [
-  {
-    id: 1,
-    name: "Zip Tote Basket",
-    color: "White and black",
-    href: "#",
-    imageSrc:
-      "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-related-product-01.jpg",
-    imageAlt:
-      "Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.",
-    price: "$140",
-  },
-  {
-    id: 2,
-    name: "Zip Tote Basket",
-    color: "White and black",
-    href: "#",
-    imageSrc:
-      "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-related-product-01.jpg",
-    imageAlt:
-      "Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.",
-    price: "$140",
-  },
-  {
-    id: 3,
-    name: "Zip Tote Basket",
-    color: "White and black",
-    href: "#",
-    imageSrc:
-      "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-related-product-01.jpg",
-    imageAlt:
-      "Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.",
-    price: "$140",
-  },
-  {
-    id: 4,
-    name: "Zip Tote Basket",
-    color: "White and black",
-    href: "#",
-    imageSrc:
-      "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-related-product-01.jpg",
-    imageAlt:
-      "Front of zip tote bag with white canvas, black canvas straps and handle, and black zipper pulls.",
-    price: "$140",
-  },
-  // More products...
-];
+const demoProduct = {
+  name: "Zip Tote Basket",
+  price: "$140",
+  rating: 4,
+  images: [
+    {
+      id: 1,
+      name: "Angled view",
+      src: "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-product-01.jpg",
+      alt: "Angled front view with bag zipped and handles upright.",
+    },
+    {
+      id: 2,
+      name: "Angled view",
+      src: "https://res.cloudinary.com/dyb0qa58h/image/upload/v1699357042/qmjhal0k7ygtcfvgea8u.jpg",
+      alt: "Angled front view with bag zipped and handles upright.",
+    },
+    {
+      id: 3,
+      name: "Angled view",
+      src: "https://res.cloudinary.com/dyb0qa58h/image/upload/v1699357113/kyuonuhab6uge4arosuo.jpg",
+      alt: "Angled front view with bag zipped and handles upright.",
+    },
+    {
+      id: 4,
+      name: "Angled view",
+      src: "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-product-01.jpg",
+      alt: "Angled front view with bag zipped and handles upright.",
+    },
+    // More images...
+  ],
+  colors: [
+    {
+      name: "Washed Black",
+      bgColor: "bg-gray-700",
+      selectedColor: "ring-gray-700",
+    },
+    { name: "White", bgColor: "bg-white", selectedColor: "ring-gray-400" },
+    {
+      name: "Washed Gray",
+      bgColor: "bg-gray-500",
+      selectedColor: "ring-gray-500",
+    },
+  ],
+  description: `
+    <p>The Zip Tote Basket is the perfect midpoint between shopping tote and comfy backpack. With convertible straps, you can hand carry, should sling, or backpack this convenient and spacious bag. The zip top and durable canvas construction keeps your goods protected for all-day use.</p>
+  `,
+  details: [
+    {
+      name: "Features",
+      items: [
+        "Multiple strap configurations",
+        "Spacious interior with top zip",
+        "Leather handle and tabs",
+        "Interior dividers",
+        "Stainless strap loops",
+        "Double stitched construction",
+        "Water-resistant",
+      ],
+    },
+    {
+      name: "Shipping",
+      items: [
+        "Multiple strap configurations",
+        "Spacious interior with top zip",
+        "Leather handle and tabs",
+        "Interior dividers",
+        "Stainless strap loops",
+        "Double stitched construction",
+        "Water-resistant",
+      ],
+    },
+    {
+      name: "Core",
+      items: [
+        "Multiple strap configurations",
+        "Spacious interior with top zip",
+        "Leather handle and tabs",
+        "Interior dividers",
+        "Stainless strap loops",
+        "Double stitched construction",
+        "Water-resistant",
+      ],
+    },
+    // More sections...
+  ],
+};
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
 interface Props {
-  singleProduct: Product;
+  singleProduct: ProductSingle;
 }
 
 const SingleProductContent = ({ singleProduct: product }: Props) => {
+  const [selectedColor, setSelectedColor] = useState(demoProduct.colors[0]);
+
   const { cartItems, setIsCartOpen, increaseCartQuantity, removeFromCart } =
     useCartStore();
 
@@ -185,72 +136,6 @@ const SingleProductContent = ({ singleProduct: product }: Props) => {
     setIsCartOpen(true); // Open the side cart
   };
 
-  const demoProduct = {
-    name: "Zip Tote Basket",
-    price: "$140",
-    rating: 4,
-    images: [
-      {
-        id: 1,
-        name: "Angled view",
-        src: "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-product-01.jpg",
-        alt: "Angled front view with bag zipped and handles upright.",
-      },
-      {
-        id: 2,
-        name: "Angled view",
-        src: "https://res.cloudinary.com/dyb0qa58h/image/upload/v1699357042/qmjhal0k7ygtcfvgea8u.jpg",
-        alt: "Angled front view with bag zipped and handles upright.",
-      },
-      {
-        id: 3,
-        name: "Angled view",
-        src: "https://res.cloudinary.com/dyb0qa58h/image/upload/v1699357113/kyuonuhab6uge4arosuo.jpg",
-        alt: "Angled front view with bag zipped and handles upright.",
-      },
-      {
-        id: 4,
-        name: "Angled view",
-        src: "https://tailwindui.com/plus/img/ecommerce-images/product-page-03-product-01.jpg",
-        alt: "Angled front view with bag zipped and handles upright.",
-      },
-      // More images...
-    ],
-    colors: [
-      {
-        name: "Washed Black",
-        bgColor: "bg-gray-700",
-        selectedColor: "ring-gray-700",
-      },
-      { name: "White", bgColor: "bg-white", selectedColor: "ring-gray-400" },
-      {
-        name: "Washed Gray",
-        bgColor: "bg-gray-500",
-        selectedColor: "ring-gray-500",
-      },
-    ],
-    description: `
-    <p>The Zip Tote Basket is the perfect midpoint between shopping tote and comfy backpack. With convertible straps, you can hand carry, should sling, or backpack this convenient and spacious bag. The zip top and durable canvas construction keeps your goods protected for all-day use.</p>
-  `,
-    details: [
-      {
-        name: "Variations IDs",
-        items: product.variations,
-      },
-      {
-        name: "Related Product IDs",
-        items: product.related_ids,
-      },
-      {
-        name: "Upsell IDs",
-        items: product.upsell_ids,
-      },
-      // More sections...
-    ],
-  };
-
-  const [selectedColor, setSelectedColor] = useState(demoProduct.colors[0]);
-
   return (
     <div className="bg-white">
       <main className="mx-auto max-w-7xl sm:px-6 sm:pt-16 lg:px-8">
@@ -262,16 +147,16 @@ const SingleProductContent = ({ singleProduct: product }: Props) => {
               {/* Image selector */}
               <div className="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
                 <TabList className="grid grid-cols-4 gap-6">
-                  {product.images?.map((image) => (
+                  {product.galleryImages?.map((image) => (
                     <Tab
-                      key={image.id}
+                      key={image.sourceUrl}
                       className="group relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-indigo-500/50 focus:ring-offset-4"
                     >
                       <span className="sr-only">{product.name}</span>
                       <span className="absolute inset-0 overflow-hidden rounded-md">
                         <Image
                           alt=""
-                          src={image.src}
+                          src={image.sourceUrl}
                           className="size-full object-cover"
                           width={100}
                           height={100}
@@ -289,11 +174,27 @@ const SingleProductContent = ({ singleProduct: product }: Props) => {
               </div>
 
               <TabPanels>
-                {product.images?.map((image) => (
-                  <TabPanel key={image.src}>
+                {product.galleryImages?.length === 0 && (
+                  <TabPanel>
                     <Image
                       alt={product.name}
-                      src={image.src || "/placeholder.png"}
+                      src={
+                        product.featuredImage?.node.sourceUrl ||
+                        "/placeholder.png"
+                      }
+                      className="aspect-square w-full object-cover sm:rounded-lg"
+                      width={500}
+                      height={500}
+                      quality={80} // Optional: Adjust image quality
+                      priority={true} // Optional: Prioritize loading for featured image
+                    />
+                  </TabPanel>
+                )}
+                {product.galleryImages?.map((image) => (
+                  <TabPanel key={image.sourceUrl}>
+                    <Image
+                      alt={product.name}
+                      src={image.sourceUrl || "/placeholder.png"}
                       className="aspect-square w-full object-cover sm:rounded-lg"
                       width={500}
                       height={500}
@@ -313,7 +214,7 @@ const SingleProductContent = ({ singleProduct: product }: Props) => {
               <div className="mt-3">
                 <h2 className="sr-only">Product information</h2>
                 <p className="text-3xl tracking-tight text-gray-900">
-                  {parse(product.price_html)}
+                  {product.price}
                 </p>
               </div>
 
@@ -385,18 +286,19 @@ const SingleProductContent = ({ singleProduct: product }: Props) => {
                 {/* <div className="mt-10 flex"> */}
                 {/* Add to Cart Button */}
                 <div className="mt-10">
-                  {!isProductInCart(product.id) && (
+                  {!isProductInCart(product.databaseId) && (
                     <button
+                      type="submit"
                       className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
-                      onClick={() => handleAddToCart(product.id)}
+                      onClick={() => handleAddToCart(product.databaseId)}
                     >
                       Add to Order
                     </button>
                   )}
-                  {isProductInCart(product.id) && (
+                  {isProductInCart(product.databaseId) && (
                     <button
                       className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-red-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
-                      onClick={() => handleRemoveCartItem(product.id)}
+                      onClick={() => handleRemoveCartItem(product.databaseId)}
                     >
                       Remove from Cart
                     </button>
@@ -470,15 +372,15 @@ const SingleProductContent = ({ singleProduct: product }: Props) => {
             </h2>
 
             <div className="mt-8 grid grid-cols-1 gap-y-12 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
-              {relatedProducts.map((product) => (
+              {product.related?.map((product) => (
                 <div key={product.id}>
                   <div className="relative">
                     <div className="relative h-72 w-full overflow-hidden rounded-lg">
                       <Image
                         alt={product.name}
                         src={
-                          // product.featuredImage?.node.sourceUrl ||
-                          product.imageSrc || "/placeholder.png"
+                          product.featuredImage?.node.sourceUrl ||
+                          "/placeholder.png"
                         } // Add fallback if sourceUrl is undefined
                         className="size-full object-cover"
                         width={280}
@@ -491,7 +393,9 @@ const SingleProductContent = ({ singleProduct: product }: Props) => {
                       <h3 className="text-sm font-medium text-gray-900">
                         {product.name}
                       </h3>
-                      {/* <p className="mt-1 text-sm text-gray-500">{product.id}</p> */}
+                      <p className="mt-1 text-sm text-gray-500">
+                        {product.slug}
+                      </p>
                     </div>
                     <div className="absolute inset-x-0 top-0 flex h-72 items-end justify-end overflow-hidden rounded-lg p-4">
                       <div
@@ -505,7 +409,7 @@ const SingleProductContent = ({ singleProduct: product }: Props) => {
                   </div>
                   <div className="mt-6">
                     <a
-                      href={`/shop/${product.id}`}
+                      href={`/shop/${product.slug}`}
                       className="relative flex items-center justify-center rounded-md border border-transparent bg-gray-100 px-8 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200"
                     >
                       SELECT OPTIONS

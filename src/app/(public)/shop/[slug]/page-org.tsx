@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
+
 import SingleProductContent from "./SingleProductContent";
 import {
   fetchAllProductSlugs,
   fetchProductBySlug,
-  fetchProductVariationsById,
-} from "@/services/productServices";
+} from "@/services/productServices-GQL";
 
 // Generate static params for SSG
 export async function generateStaticParams() {
@@ -38,17 +38,9 @@ const SingleProductPage = async ({
     notFound();
   }
 
-  // TESTING PRODUCT VARIATION
-  const variations = await fetchProductVariationsById(
-    singleProduct.id,
-    singleProduct.variations
-  );
-  console.log("varions [SingleProductContent]", variations);
-
   return (
     <div>
       <SingleProductContent singleProduct={singleProduct} />
-      {/* Single Product Content by {slug} ... coming soon! */}
     </div>
   );
 };
