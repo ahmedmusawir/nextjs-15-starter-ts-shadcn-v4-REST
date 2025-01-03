@@ -19,6 +19,7 @@ export interface Product {
   slug: string;
   permalink: string;
   price: string;
+  price_html: string;
   regular_price?: string;
   sale_price?: string;
   on_sale: boolean;

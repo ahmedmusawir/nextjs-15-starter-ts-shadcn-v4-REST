@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCartStore } from "@/store/useCartStore";
 import { Product } from "@/types/product";
-import parse from "html-react-parser";
 
 interface Props {
   product: Product;
@@ -53,18 +52,10 @@ const ProductListItem = ({ product }: Props) => {
           {product.categories.map((cat) => cat.name)}
         </p>
         <p className="mt-1 text-sm font-medium text-gray-900">
-          {parse(product.price_html)}
+          {product.price}
         </p>
 
-        <Link href={`/shop/${product.slug}`}>
-          <button
-            type="button"
-            className="mt-8 rounded-full bg-indigo-600 px-4 py-3 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 float-right xl:mb-10"
-          >
-            SELECT OPTIONS
-          </button>
-        </Link>
-        {/* {!isProductInCart(product.id) && (
+        {!isProductInCart(product.id) && (
           <button
             type="button"
             className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 float-right xl:mb-10"
@@ -81,7 +72,7 @@ const ProductListItem = ({ product }: Props) => {
           >
             Remove Item
           </button>
-        )} */}
+        )}
       </section>
     </div>
   );
