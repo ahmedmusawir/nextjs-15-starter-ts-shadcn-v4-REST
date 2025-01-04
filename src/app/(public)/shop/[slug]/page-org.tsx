@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
-
 import SingleProductContent from "./SingleProductContent";
 import {
   fetchAllProductSlugs,
   fetchProductBySlug,
-} from "@/services/productServices-GQL";
+  fetchProductVariationsById,
+  fetchRelatedProductsById,
+} from "@/services/productServices";
+import { products } from "@/demo-data/data";
 
 // Generate static params for SSG
 export async function generateStaticParams() {
@@ -38,9 +40,25 @@ const SingleProductPage = async ({
     notFound();
   }
 
+  // TESTING PRODUCT VARIATION
+  const variations = await fetchProductVariationsById(
+    singleProduct.id,
+    singleProduct.variations
+  );
+  console.log("varions [SingleProductContent]", variations);
+  // TESTING RELATED PRODUCTS
+  const relatedProducts = await fetchRelatedProductsById(
+    singleProduct.related_ids
+  );
+  console.log("relatedProducts [SingleProductContent]", relatedProducts);
+
   return (
     <div>
-      <SingleProductContent singleProduct={singleProduct} />
+      <SingleProductContent
+        singleProduct={singleProduct}
+        relatedProducts={relatedProducts}
+      />
+      {/* Single Product Content by {slug} ... coming soon! */}
     </div>
   );
 };

@@ -50,6 +50,7 @@ export interface Product {
   tax_class: string;
 }
 
+// Represented product variations for Single Product Details
 export interface ProductVariation {
   id: number; // Unique ID of the variation
   price: string; // Current price of the variation
@@ -69,4 +70,13 @@ export interface ProductVariation {
     src: string; // Image URL
     alt: string; // Alt text for the image
   }; // Featured image for the variation (optional)
+}
+
+// Represented related products
+export interface RelatedProduct {
+  id: number; // The unique ID of the product
+  name: string; // The name of the product
+  slug: string; // The slug for building product URLs
+  price_html: string; // The HTML for displaying product price (includes ranges or sale info)
+  image: string; // The URL of the product's featured image
 }

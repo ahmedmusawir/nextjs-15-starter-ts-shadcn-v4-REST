@@ -1,4 +1,4 @@
-import { Product } from "@/types/product";
+import { Product, RelatedProduct } from "@/types/product";
 
 /**
  * Fetch Paginated Products [FROM CLIENT SIDE]
@@ -71,7 +71,10 @@ export const fetchPaginatedProducts = async (
  * - Uses environment variables for WooCommerce API credentials.
  */
 
-import { WOOCOM_REST_GET_ALL_PRODUCTS } from "@/rest-api/products";
+import {
+  WOOCOM_REST_GET_ALL_PRODUCTS,
+  WOOCOM_REST_GET_PRODUCT_BY_ID,
+} from "@/rest-api/products";
 
 export const fetchInitialProducts = async (
   page: number = 1,
@@ -338,3 +341,70 @@ export const fetchProductVariationsById = async (
 };
 
 // --------------------------- FETCH PRODUCT VARIATIONS BY VARIATION IDs ENDS --------------------------------------------
+// --------------------------- FETCH RELATED PRODUCT IDs STARTS ----------------------------------------------------------
+
+/**
+ * Fetch Related Products by IDs
+ *
+ * This function retrieves the details of related products based on their IDs
+ * from the WooCommerce REST API. It is optimized for fetching only the minimal
+ * data required for the related products section.
+ *
+ * @param {number[]} productIds - Array of related product IDs.
+ * @returns {Promise<RelatedProduct[]>} - Array of formatted related product objects.
+ * @throws {Error} If fetching any product fails.
+ */
+export const fetchRelatedProductsById = async (
+  productIds: number[]
+): Promise<RelatedProduct[]> => {
+  try {
+    // Fetch all related products concurrently using Promise.all
+    const relatedProducts = await Promise.all(
+      productIds.map(async (productId) => {
+        const response = await fetch(
+          WOOCOM_REST_GET_PRODUCT_BY_ID(productId), // Use the ID to fetch product details
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error(
+            `[fetchRelatedProductsById] Failed to fetch product ${productId}:`,
+            await response.json()
+          );
+          throw new Error(`Failed to fetch related product ${productId}`);
+        }
+
+        const product = await response.json();
+
+        // Format the data to return only necessary fields
+        return {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          price_html: product.price_html,
+          image: product.images?.[0]?.src || "", // Use the first image as the featured image
+        };
+      })
+    );
+
+    console.log(
+      "[fetchRelatedProductsById] Related products fetched successfully:",
+      relatedProducts
+    );
+
+    return relatedProducts;
+  } catch (error) {
+    console.error(
+      "[fetchRelatedProductsById] Error fetching related products:",
+      error
+    );
+    throw error;
+  }
+};
+
+// --------------------------- FETCH RELATED PRODUCT IDs ENDS ------------------------------------------------------------
