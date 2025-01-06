@@ -6,7 +6,6 @@ import {
   fetchProductVariationsById,
   fetchRelatedProductsById,
 } from "@/services/productServices";
-import { products } from "@/demo-data/data";
 
 // Generate static params for SSG
 export async function generateStaticParams() {
@@ -29,28 +28,30 @@ const SingleProductPage = async ({
   const { slug } = await params;
 
   const singleProduct = await fetchProductBySlug(slug);
-  console.log("Fetched product data:", singleProduct); // Log for testing purposes
-
-  // TESTING THE GEN PARAM FUNC
-  // const slugs = await fetchAllProductSlugs();
-  // console.log("Fetched product slugs:", slugs);
+  // console.log("Fetched product data [shop/[slug]/page]:", singleProduct); // Log for testing purposes
 
   // Handle 404 with ISR
   if (!singleProduct) {
     notFound();
   }
 
-  // TESTING PRODUCT VARIATION
-  const variations = await fetchProductVariationsById(
-    singleProduct.id,
-    singleProduct.variations
-  );
-  console.log("varions [SingleProductContent]", variations);
-  // TESTING RELATED PRODUCTS
-  const relatedProducts = await fetchRelatedProductsById(
-    singleProduct.related_ids
-  );
-  console.log("relatedProducts [SingleProductContent]", relatedProducts);
+  const productWithVariations = {
+    ...singleProduct,
+    variations: await fetchProductVariationsById(
+      singleProduct.id,
+      singleProduct.variations
+    ),
+    related_products: await fetchRelatedProductsById(singleProduct.related_ids),
+  };
+
+  console.log("varions [SingleProduct Page]", productWithVariations.variations);
+
+  // console.log(
+  //   "relatedProducts [SingleProductContent]",
+  //   productWithVariations.related_products
+  // );
+
+  const relatedProducts = productWithVariations.related_products;
 
   return (
     <div>

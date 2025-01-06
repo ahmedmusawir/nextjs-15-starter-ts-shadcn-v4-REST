@@ -28,7 +28,6 @@ const SingleProductPage = async ({
   const { slug } = await params;
 
   const singleProduct = await fetchProductBySlug(slug);
-  console.log("Fetched product data:", singleProduct); // Log for testing purposes
 
   // Handle 404 with ISR
   if (!singleProduct) {
@@ -44,25 +43,26 @@ const SingleProductPage = async ({
     related_products: await fetchRelatedProductsById(singleProduct.related_ids),
   };
 
-  console.log(
-    "varions [SingleProductContent]",
-    productWithVariations.variations
-  );
-
-  console.log(
-    "relatedProducts [SingleProductContent]",
-    productWithVariations.related_products
-  );
+  console.log("varions [SingleProduct Page]", productWithVariations.variations);
 
   const relatedProducts = productWithVariations.related_products;
 
+  console.log("singleProduct [SingleProduct page]", singleProduct);
+
   return (
     <div>
+      {/* Embed variations data as JSON */}
+      <script
+        id="product-variations"
+        type="application/json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(productWithVariations.variations),
+        }}
+      />
       <SingleProductContent
         singleProduct={singleProduct}
         relatedProducts={relatedProducts}
       />
-      {/* Single Product Content by {slug} ... coming soon! */}
     </div>
   );
 };

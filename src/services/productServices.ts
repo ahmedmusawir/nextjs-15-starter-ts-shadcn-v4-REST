@@ -26,7 +26,7 @@ export const fetchPaginatedProducts = async (
 ): Promise<{ products: Product[]; totalProducts: number }> => {
   const url = `${BASE_URL}/api/get-all-products?page=${page}&perPage=${perPage}`;
 
-  console.log("Fetching products from API route:", url);
+  // console.log("Fetching products from API route:", url);
 
   const response = await fetch(url, {
     method: "GET",
@@ -41,7 +41,7 @@ export const fetchPaginatedProducts = async (
 
   const data = await response.json();
 
-  console.log("[productServices] - data", data);
+  // console.log("[productServices] - data", data);
 
   // Destructure products and totalProducts from the API response
   const { products, totalProducts } = data;
@@ -107,11 +107,7 @@ export const fetchInitialProducts = async (
       10
     );
 
-    console.log(
-      "[fetchInitialProducts] Products fetched successfully:",
-      products
-    );
-    console.log("[fetchInitialProducts] Total products:", totalProducts);
+    // console.log("[fetchInitialProducts] Total products:", totalProducts);
 
     return { products, totalProducts };
   } catch (error) {
@@ -182,14 +178,14 @@ export const fetchAllProductSlugs = async (
       const slugs = products.map((product) => product.slug);
       allSlugs = [...allSlugs, ...slugs];
 
-      console.log(`[fetchAllProductSlugs] Page ${page} fetched:`, slugs);
+      // console.log(`[fetchAllProductSlugs] Page ${page} fetched:`, slugs);
 
       // Check if there are more pages (based on the number of results returned)
       hasNextPage = products.length === perPage;
       page += 1; // Increment the page number for the next fetch
     }
 
-    console.log("[fetchAllProductSlugs] Total slugs fetched:", allSlugs.length);
+    // console.log("[fetchAllProductSlugs] Total slugs fetched:", allSlugs.length);
 
     return allSlugs;
   } catch (error) {
@@ -228,7 +224,7 @@ export const fetchProductBySlug = async (
     // Construct the request URL for fetching the product by slug
     const url = WOOCOM_REST_GET_PRODUCT_BY_SLUG(slug);
 
-    console.log("[fetchProductBySlug] Fetching product from:", url);
+    // console.log("[fetchProductBySlug] Fetching product from:", url);
 
     // Fetch data from the WooCommerce REST API
     const response = await fetch(url, {
@@ -252,7 +248,7 @@ export const fetchProductBySlug = async (
     // WooCommerce returns an array even for a single slug, so we take the first item
     const product = products.length > 0 ? products[0] : null;
 
-    console.log("[fetchProductBySlug] Product fetched successfully:", product);
+    // console.log("[fetchProductBySlug] Product fetched successfully:", product);
 
     return product;
   } catch (error) {
@@ -265,10 +261,11 @@ export const fetchProductBySlug = async (
 };
 
 // --------------------------- FETCH PRODUCT BY SLUG ENDS ----------------------------------------------------------------
+
 // --------------------------- FETCH PRODUCT VARIATIONS BY VARIATION IDs STARTS ------------------------------------------
+
 import { WOOCOM_REST_GET_VARIATION_BY_ID } from "@/rest-api/products";
 import { ProductVariation } from "@/types/product";
-import clsx from "clsx";
 
 /**
  * Fetch Product Variations by IDs
@@ -326,10 +323,10 @@ export const fetchProductVariationsById = async (
       })
     );
 
-    console.log(
-      "[fetchProductVariationsById] Variations fetched successfully:",
-      variations
-    );
+    // console.log(
+    //   "[fetchProductVariationsById] Variations fetched successfully:",
+    //   variations
+    // );
     return variations;
   } catch (error) {
     console.error(
@@ -341,6 +338,7 @@ export const fetchProductVariationsById = async (
 };
 
 // --------------------------- FETCH PRODUCT VARIATIONS BY VARIATION IDs ENDS --------------------------------------------
+
 // --------------------------- FETCH RELATED PRODUCT IDs STARTS ----------------------------------------------------------
 
 /**
@@ -392,10 +390,10 @@ export const fetchRelatedProductsById = async (
       })
     );
 
-    console.log(
-      "[fetchRelatedProductsById] Related products fetched successfully:",
-      relatedProducts
-    );
+    // console.log(
+    //   "[fetchRelatedProductsById] Related products fetched successfully:",
+    //   relatedProducts
+    // );
 
     return relatedProducts;
   } catch (error) {
