@@ -182,11 +182,6 @@ const ProductPricing = () => {
       </div>
 
       {/* Current Price */}
-      {/* <div className="mt-10">
-        <h3 className="text-lg font-medium text-gray-900">
-          Current Price: {currentPrice || "Select options"}
-        </h3>
-      </div> */}
       <div className="mt-10 p-4 bg-gray-100 rounded-lg shadow-sm">
         <h3 className="text-xl font-bold text-gray-800">
           Current Price: {currentPrice ? `$${currentPrice}` : "Select options"}
