@@ -31,7 +31,7 @@ const ProductDetails = ({ product }: Props) => {
         {/* <ProductDescription product={product} /> */}
 
         {/* Colors */}
-        <ProductPricing product={product} />
+        <ProductPricing />
 
         {/* Add to Cart Button */}
         <AddToCartButton product={product} />
