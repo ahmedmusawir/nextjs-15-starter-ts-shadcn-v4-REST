@@ -52,6 +52,7 @@ export function formatDateString(dateString: string): string {
   }
 }
 
+import { ProductVariation } from "@/types/product";
 /**
  * Utility function `cn` for managing and merging class names dynamically.
  *
@@ -105,3 +106,81 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+/**
+ * Determines the category of a WooCommerce product based on its variations and attributes.
+ *
+ * This function analyzes the product's data structure to classify it into one of the following categories:
+ * - "simple": Products with no variations.
+ * - "single-variation": Products with one attribute defining variations (e.g., "Color").
+ * - "complex-variation": Products with multiple attributes defining variations (e.g., "Color + Size").
+ * - "bloxx": A specialized subset of "complex-variation" products with interdependent attributes
+ *   (e.g., "Pole Shape" filters "Pole Size" and "Version").
+ *
+ * The function also generates:
+ * - `defaultSelections`: The first option for each attribute to initialize the UI.
+ * - `filtering` (for Bloxx): Rules to filter dependent attributes based on selected options.
+ *
+ * @param {object} product - The WooCommerce product object containing variations and attributes.
+ * @param {ProductVariation[]} product.variations - Array of product variations, each with attribute data.
+ * @param {Array<{name: string, options: string[]}>} product.attributes - Array of product attributes,
+ *        including attribute names and available options.
+ *
+ * @returns {object} An object containing:
+ * - `type` (string): The category of the product ("simple", "single-variation", "complex-variation", or "bloxx").
+ * - `defaultSelections` (optional): Key-value pairs mapping attribute names to their default selected options.
+ * - `filtering` (optional): Rules for interdependent attributes, applicable for Bloxx.
+ *
+ * Example Usage:
+ * const category = detectProductCategory(product);
+ * console.log(category.type); // e.g., "bloxx"
+ * console.log(category.defaultSelections); // { "Pole Shape": "Square", "Version": "Single Sided" }
+ */
+
+export const detectProductCategory = (product: {
+  variations: ProductVariation[];
+  attributes: { name: string; options: string[] }[];
+}): {
+  type: string;
+  defaultSelections?: Record<string, string>;
+  filtering?: Record<string, string[]>;
+} => {
+  if (product.variations.length === 0) {
+    return { type: "simple" }; // Simple product
+  }
+
+  const attributeCount = product.variations[0]?.attributes.length || 0;
+
+  if (attributeCount === 1) {
+    // Single-variation product
+    const defaultSelections: Record<string, string> = {};
+    product.attributes.forEach((attr) => {
+      defaultSelections[attr.name] = attr.options[0]; // Default to the first option
+    });
+    return { type: "single-variation", defaultSelections };
+  }
+
+  if (
+    product.attributes.some((attr) => attr.name === "Pole Shape") &&
+    product.attributes.some((attr) => attr.name === "Pole Size")
+  ) {
+    // Bloxx category
+    const defaultSelections: Record<string, string> = {};
+    product.attributes.forEach((attr) => {
+      defaultSelections[attr.name] = attr.options[0];
+    });
+    return {
+      type: "bloxx",
+      defaultSelections,
+      filtering: { "Pole Shape": ["Pole Size", "Version"] },
+    };
+  }
+
+  // Default to complex-variation
+  const defaultSelections: Record<string, string> = {};
+  product.attributes.forEach((attr) => {
+    defaultSelections[attr.name] = attr.options[0];
+  });
+
+  return { type: "complex-variation", defaultSelections };
+};

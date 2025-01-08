@@ -6,6 +6,7 @@ import {
   fetchProductVariationsById,
   fetchRelatedProductsById,
 } from "@/services/productServices";
+import { detectProductCategory } from "@/lib/utils";
 
 // Generate static params for SSG
 export async function generateStaticParams() {
@@ -49,14 +50,26 @@ const SingleProductPage = async ({
 
   console.log("singleProduct [SingleProduct page]", singleProduct);
 
+  // Detect the product category
+  const customCategory = detectProductCategory(productWithVariations);
+  console.log("custom Category [SingleProduct page]", customCategory);
+
   return (
     <div>
-      {/* Embed variations data as JSON */}
+      {/* Embeded variations data as JSON */}
       <script
         id="product-variations"
         type="application/json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(productWithVariations.variations),
+        }}
+      />
+      {/* Embed category data as JSON */}
+      <script
+        id="product-category-custom"
+        type="application/json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(customCategory),
         }}
       />
       <SingleProductContent
