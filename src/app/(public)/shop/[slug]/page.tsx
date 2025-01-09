@@ -12,7 +12,7 @@ import { detectProductCategory } from "@/lib/utils";
 export async function generateStaticParams() {
   try {
     const slugs = await fetchAllProductSlugs();
-    console.log("Fetched product slugs:", slugs);
+    // console.log("Fetched product slugs:", slugs);
     return slugs.map((slug: string) => ({ slug }));
   } catch (error) {
     console.error("Error fetching product slugs:", error);
@@ -37,6 +37,7 @@ const SingleProductPage = async ({
 
   const productWithVariations = {
     ...singleProduct,
+    price: parseFloat(singleProduct.price),
     variations: await fetchProductVariationsById(
       singleProduct.id,
       singleProduct.variations

@@ -140,13 +140,16 @@ export function cn(...inputs: ClassValue[]) {
 export const detectProductCategory = (product: {
   variations: ProductVariation[];
   attributes: { name: string; options: string[] }[];
+  price: number;
 }): {
   type: string;
+  price?: number;
   defaultSelections?: Record<string, string>;
   filtering?: Record<string, string[]>;
 } => {
   if (product.variations.length === 0) {
-    return { type: "simple" }; // Simple product
+    // return { type: "simple" }; // Simple product
+    return { type: "simple", price: product.price }; // Include price for simple products
   }
 
   const attributeCount = product.variations[0]?.attributes.length || 0;

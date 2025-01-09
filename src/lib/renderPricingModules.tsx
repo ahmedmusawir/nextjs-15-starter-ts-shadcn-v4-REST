@@ -1,10 +1,11 @@
 import React from "react";
 
 export const renderPricingModule = (
-  productCategory: { type: string } | null,
+  productCategory: { type: string; price?: number } | null,
   setBasePrice: React.Dispatch<React.SetStateAction<number | null>>,
   components: {
     SimplePricing: React.ComponentType<{
+      productPrice: number;
       onPriceChange: (price: number | null) => void;
     }>;
     SingleVariationPricing: React.ComponentType<{
@@ -22,7 +23,7 @@ export const renderPricingModule = (
     return <div>Error: Could not determine product category.</div>;
   }
 
-  const { type } = productCategory;
+  const { type, price } = productCategory;
   const {
     SimplePricing,
     SingleVariationPricing,
@@ -32,7 +33,12 @@ export const renderPricingModule = (
 
   switch (type) {
     case "simple":
-      return <SimplePricing onPriceChange={setBasePrice} />;
+      if (price === undefined) {
+        return <div>Error: Missing price for simple product.</div>;
+      }
+      return (
+        <SimplePricing productPrice={price} onPriceChange={setBasePrice} />
+      );
     case "single-variation":
       return <SingleVariationPricing onPriceChange={setBasePrice} />;
     case "complex-variation":
