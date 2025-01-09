@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { ProductVariation } from "@/types/product";
 
-interface Props {
-  onPriceChange: (price: number | null) => void; // Prop to communicate price changes
-}
-
-const ComplexVariationPricing = ({ onPriceChange }: Props) => {
+const ComplexVariationPricing = () => {
   const [variations, setVariations] = useState<ProductVariation[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string>
   >({});
+  const [currentPrice, setCurrentPrice] = useState<string | null>(null);
 
   // Fetch and parse variations JSON on mount
   useEffect(() => {
@@ -54,20 +51,18 @@ const ComplexVariationPricing = ({ onPriceChange }: Props) => {
     }));
   };
 
-  // Calculate current price and notify parent
+  // Calculate current price
   useEffect(() => {
     const matchedVariation = variations.find((variation) =>
       variation.attributes.every(
         (attr) => selectedOptions[attr.name] === attr.option
       )
     );
-
-    const price = matchedVariation ? parseFloat(matchedVariation.price) : null;
-    onPriceChange(price); // Notify parent of price change
-  }, [selectedOptions, variations, onPriceChange]);
+    setCurrentPrice(matchedVariation?.price || null);
+  }, [selectedOptions, variations]);
 
   return (
-    <div className="mt-10">
+    <div>
       <div className="space-y-6">
         {Object.keys(selectedOptions).map((attributeName) => (
           <div key={attributeName} className="mb-4">
@@ -91,6 +86,12 @@ const ComplexVariationPricing = ({ onPriceChange }: Props) => {
             </div>
           </div>
         ))}
+      </div>
+      {/* Current Price */}
+      <div className="mt-10 p-4 bg-gray-100 rounded-lg shadow-sm">
+        <h3 className="text-xl font-bold text-gray-800">
+          Current Price: {currentPrice ? `$${currentPrice}` : "Select options"}
+        </h3>
       </div>
     </div>
   );

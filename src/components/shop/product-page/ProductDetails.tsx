@@ -1,27 +1,26 @@
 "use client";
 
-import { Product } from "@/types/product";
-import ProductImageGallery from "./ProductImageGallery";
-import ProductReviews from "./ProductReviews";
-import AddToCartButton from "./AddToCartButton";
-import ProductDescription from "./ProductDescription";
-import ProductColorRadio from "./ProductColorRadio";
-import AdditionalDetailsAccordion from "./AdditionalDetailsAccordion";
-import ProductInfo from "./ProductInfo";
-import ProductPricing from "./ProductPricing";
-import DynamicProductUI from "./DynamicProductUi";
-import { useEffect, useState } from "react";
 import Spinner from "@/components/common/Spinner";
+import { Product } from "@/types/product";
+import { useEffect, useState } from "react";
+import AdditionalDetailsAccordion from "./AdditionalDetailsAccordion";
+import AddToCartButton from "./AddToCartButton";
+import ProductImageGallery from "./ProductImageGallery";
+import ProductInfo from "./ProductInfo";
 import BloxxPricing from "./variations/BloxxPricing";
+import ComplexVariationPricing from "./variations/ComplexVariationPricing";
 import SimplePricing from "./variations/SimplePricing";
 import SingleVariationPricing from "./variations/SingleVariationPricing";
-import ComplexVariationPricing from "./variations/ComplexVariationPricing";
+import { renderPricingModule } from "@/lib/renderPricingModules";
+import CurrentPriceDisplay from "./CurrentPriceDisplay";
 
 interface Props {
   product: Product;
 }
 
 const ProductDetails = ({ product }: Props) => {
+  const [basePrice, setBasePrice] = useState<number | null>(null);
+  const [quantity, setQuantity] = useState<number>(1); // Default to 1
   const [productCategory, setProductCategory] = useState<{
     type: string;
   } | null>(null);
@@ -40,7 +39,7 @@ const ProductDetails = ({ product }: Props) => {
   }
 
   const { type } = productCategory;
-  console.log("Custom Catetory [ProductDetails]", type);
+  // console.log("Custom Catetory [ProductDetails]", type);
 
   return (
     <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
@@ -51,17 +50,34 @@ const ProductDetails = ({ product }: Props) => {
       <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
         <ProductInfo product={product} />
 
-        {/* Reviews */}
-        {/* <ProductReviews /> */}
+        {/* Render the appropriate pricing module */}
+        {renderPricingModule(productCategory, setBasePrice, {
+          SimplePricing,
+          SingleVariationPricing,
+          ComplexVariationPricing,
+          BloxxPricing,
+        })}
 
-        {/* Description */}
-        {/* <ProductDescription product={product} /> */}
+        {/* Quantity Selector */}
+        <div className="mt-10">
+          <label
+            htmlFor="quantity"
+            className="text-sm font-medium text-gray-600"
+          >
+            Quantity
+          </label>
+          <input
+            id="quantity"
+            type="number"
+            min="1"
+            value={quantity}
+            onChange={(e) => setQuantity(Number(e.target.value))}
+            className="ml-2 p-2 border rounded-md text-gray-900"
+          />
+        </div>
 
-        {/* Dynamic Pricing Block */}
-        {type === "bloxx" && <BloxxPricing />}
-        {type === "simple" && <SimplePricing />}
-        {type === "single-variation" && <SingleVariationPricing />}
-        {type === "complex-variation" && <ComplexVariationPricing />}
+        {/* Current Price Display */}
+        <CurrentPriceDisplay basePrice={basePrice} quantity={quantity} />
 
         {/* Add to Cart Button */}
         <AddToCartButton product={product} />

@@ -3,11 +3,7 @@
 import { ProductVariation } from "@/types/product";
 import React, { useState, useEffect } from "react";
 
-interface BloxxPricingProps {
-  onPriceChange: (price: number | null) => void;
-}
-
-const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
+const BloxxPricing = () => {
   const [variations, setVariations] = useState<ProductVariation[]>([]);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -89,10 +85,7 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
       );
       return shapeMatch && versionMatch && sizeMatch;
     });
-
-    const price = matchedVariation ? parseFloat(matchedVariation.price) : null;
-    setCurrentPrice(price ? `$${price}` : "N/A");
-    onPriceChange(price); // Pass the price to the parent component
+    setCurrentPrice(matchedVariation ? matchedVariation.price : "N/A");
   };
 
   // Initialize default selections on mount
@@ -164,7 +157,7 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
       ) : (
         <div className="mb-4">
           <h3 className="text-sm text-gray-600">Version</h3>
-          <p className="text-gray-500">No Version Available</p>
+          <p className="text-gray-500">N/A</p>
         </div>
       )}
 
@@ -186,6 +179,13 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Current Price */}
+      <div className="mt-10 p-4 bg-gray-100 rounded-lg shadow-sm">
+        <h3 className="text-xl font-bold text-gray-800">
+          Current Price: {currentPrice ? `$${currentPrice}` : "Select options"}
+        </h3>
       </div>
     </div>
   );
