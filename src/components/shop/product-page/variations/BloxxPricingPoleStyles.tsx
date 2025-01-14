@@ -26,10 +26,20 @@ const BloxxPricingPoleStyles = ({
       const data = JSON.parse(categoryScript.textContent || "{}");
       if (data.poleStyles) {
         setPoleStyles(data.poleStyles);
-        setSelectedPoleStyle("square"); // Default to Square
       }
     }
   }, []);
+
+  // useEffect(() => {
+  //   const categoryScript = document.getElementById("product-category-custom");
+  //   if (categoryScript) {
+  //     const data = JSON.parse(categoryScript.textContent || "{}");
+  //     if (data.poleStyles) {
+  //       setPoleStyles(data.poleStyles);
+  //       setSelectedPoleStyle("square"); // Default to Square
+  //     }
+  //   }
+  // }, []);
 
   if (!poleStyles) return null; // Render nothing if no poleStyles available
 

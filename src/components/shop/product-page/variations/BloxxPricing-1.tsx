@@ -19,6 +19,8 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
   const [selectedPoleStyle, setSelectedPoleStyle] = useState<string | null>(
     null
   );
+  const [customSize, setCustomSize] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // For validation feedback
 
   // Fetch and parse variations JSON on mount
   useEffect(() => {
@@ -126,7 +128,26 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
   // Handle Pole Style Change
   const handlePoleStyleChange = (selectedStyle: string) => {
     setSelectedPoleStyle(selectedStyle);
-    console.log("Selected Pole Style:", selectedStyle); // Optional: for debugging
+    console.log("Selected Pole Style [BloxxPricing]:", selectedStyle); // Optional: for debugging
+  };
+
+  // Handle Custom Size When the 'Other' Pole Size is Chosen (Mainly for Round and Octagon)
+  const handleCustomSizeChange = (value: string) => {
+    setCustomSize(value);
+    if (value.trim()) {
+      setError(null); // Clear the error if the input is valid
+    } else {
+      setError("Please enter a custom size.");
+    }
+  };
+
+  // Validation for custom size text field
+  const validateCustomSize = () => {
+    if (selectedSize === "Other" && (!customSize || !customSize.trim())) {
+      setError("Custom size is required when 'Other' is selected.");
+      return false;
+    }
+    return true;
   };
 
   return (
@@ -173,8 +194,8 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
         </div>
       ) : (
         <div className="mb-4">
-          <h3 className="text-sm text-gray-600">Version</h3>
-          <p className="text-gray-500">No Version Available</p>
+          {/* <h3 className="text-sm text-gray-600">Version</h3> */}
+          {/* <p className="text-gray-500">No Version Available</p> */}
         </div>
       )}
 
@@ -185,7 +206,13 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
           {filteredSizes.map((size) => (
             <button
               key={size}
-              onClick={() => setSelectedSize(size)}
+              onClick={() => {
+                setSelectedSize(size);
+                if (size !== "Other") {
+                  setCustomSize(null); // Clear custom size if "Other" is not selected
+                  setError(null); // Clear any validation error
+                }
+              }}
               className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm ${
                 selectedSize === size
                   ? "bg-indigo-500 text-white"
@@ -196,14 +223,32 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
             </button>
           ))}
         </div>
+        {/* Render the custom size input if "Other" is selected */}
+        {selectedSize === "Other" && (
+          <div className="mt-3">
+            <input
+              type="text"
+              placeholder="Enter custom size"
+              value={customSize || ""}
+              onChange={(e) => handleCustomSizeChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500"
+            />
+            {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+          </div>
+        )}
       </div>
+
       {/* Pole Shape Styles */}
       <div>
         {/* Pole Shape Styles */}
-        <BloxxPricingPoleStyles onSelectionChange={handlePoleStyleChange} />
+        <BloxxPricingPoleStyles
+          onSelectionChange={handlePoleStyleChange}
+          setSelectedPoleStyle={setSelectedPoleStyle}
+          selectedPoleStyle={selectedPoleStyle}
+        />
 
         {/* Debugging or additional logic */}
-        <p>Current Selected Pole Style: {selectedPoleStyle}</p>
+        <p className="mt-5">Current Selected Pole Style: {selectedPoleStyle}</p>
       </div>
     </div>
   );

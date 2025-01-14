@@ -19,6 +19,8 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
   const [selectedPoleStyle, setSelectedPoleStyle] = useState<string | null>(
     null
   );
+  const [customSize, setCustomSize] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // For validation feedback
 
   // Fetch and parse variations JSON on mount
   useEffect(() => {
@@ -117,16 +119,70 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
     }
   }, [selectedShape, selectedVersion, selectedSize]);
 
+  // Triggers Default Pole Shape to Pole Styles (round, round_octagon etc.)
+  useEffect(() => {
+    if (!selectedShape) return;
+
+    // Set default pole style based on default shape
+    switch (selectedShape.toLowerCase()) {
+      case "square":
+        setSelectedPoleStyle("square");
+        break;
+      case "round":
+        setSelectedPoleStyle("round");
+        break;
+      case "octagon":
+        setSelectedPoleStyle("round_octagon");
+        break;
+      default:
+        setSelectedPoleStyle(null); // Reset if no match
+    }
+  }, [selectedShape]);
+
   // Handle shape selection
   const handleShapeSelection = (shape: string) => {
     setSelectedShape(shape);
-    filterOptionsByShape(shape); // Reset versions and sizes for new shape
+    filterOptionsByShape(shape); // Reset versions and sizes for the new shape
+
+    // Update pole style based on selected shape
+    switch (shape.toLowerCase()) {
+      case "square":
+        setSelectedPoleStyle("square");
+        break;
+      case "round":
+        setSelectedPoleStyle("round");
+        break;
+      case "octagon":
+        setSelectedPoleStyle("round_octagon"); // Default for Octagon
+        break;
+      default:
+        setSelectedPoleStyle(null); // Reset if no match
+    }
   };
 
   // Handle Pole Style Change
   const handlePoleStyleChange = (selectedStyle: string) => {
     setSelectedPoleStyle(selectedStyle);
     console.log("Selected Pole Style [BloxxPricing]:", selectedStyle); // Optional: for debugging
+  };
+
+  // Handle Custom Size When the 'Other' Pole Size is Chosen (Mainly for Round and Octagon)
+  const handleCustomSizeChange = (value: string) => {
+    setCustomSize(value);
+    if (value.trim()) {
+      setError(null); // Clear the error if the input is valid
+    } else {
+      setError("Please enter a custom size.");
+    }
+  };
+
+  // Validation for custom size text field
+  const validateCustomSize = () => {
+    if (selectedSize === "Other" && (!customSize || !customSize.trim())) {
+      setError("Custom size is required when 'Other' is selected.");
+      return false;
+    }
+    return true;
   };
 
   return (
@@ -185,7 +241,13 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
           {filteredSizes.map((size) => (
             <button
               key={size}
-              onClick={() => setSelectedSize(size)}
+              onClick={() => {
+                setSelectedSize(size);
+                if (size !== "Other") {
+                  setCustomSize(null); // Clear custom size if "Other" is not selected
+                  setError(null); // Clear any validation error
+                }
+              }}
               className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm ${
                 selectedSize === size
                   ? "bg-indigo-500 text-white"
@@ -196,7 +258,21 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
             </button>
           ))}
         </div>
+        {/* Render the custom size input if "Other" is selected */}
+        {selectedSize === "Other" && (
+          <div className="mt-3">
+            <input
+              type="text"
+              placeholder="Enter custom size"
+              value={customSize || ""}
+              onChange={(e) => handleCustomSizeChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-500"
+            />
+            {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+          </div>
+        )}
       </div>
+
       {/* Pole Shape Styles */}
       <div>
         {/* Pole Shape Styles */}
