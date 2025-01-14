@@ -33,6 +33,7 @@ export const fetchPaginatedProducts = async (
     headers: {
       "Content-Type": "application/json",
     },
+    next: { revalidate: 60 }, // Cache the response for 60 seconds
   });
 
   if (!response.ok) {
@@ -90,6 +91,7 @@ export const fetchInitialProducts = async (
       headers: {
         "Content-Type": "application/json",
       },
+      next: { revalidate: 60 }, // Cache the response for 60 seconds
     });
 
     if (!response.ok) {
@@ -232,6 +234,7 @@ export const fetchProductBySlug = async (
       headers: {
         "Content-Type": "application/json",
       },
+      next: { revalidate: 60 }, // Cache the response for 60 seconds
     });
 
     if (!response.ok) {
@@ -299,6 +302,7 @@ export const fetchProductVariationsById = async (
             headers: {
               "Content-Type": "application/json",
             },
+            next: { revalidate: 60 }, // Cache the response for 60 seconds
           }
         );
 
@@ -366,6 +370,7 @@ export const fetchRelatedProductsById = async (
             headers: {
               "Content-Type": "application/json",
             },
+            next: { revalidate: 60 }, // Cache the response for 60 seconds
           }
         );
 
@@ -406,3 +411,76 @@ export const fetchRelatedProductsById = async (
 };
 
 // --------------------------- FETCH RELATED PRODUCT IDs ENDS ------------------------------------------------------------
+
+// --------------------------- FETCH POLE SHAPE STYLES FROM ACF STARTS ------------------------------------------------------------
+/**
+ * Fetches pole shape styles from the ACF Options API.
+ *
+ * This function queries the WordPress ACF REST API for globally defined pole shape styles.
+ * The data includes image URLs for different pole shapes (e.g., round, square, octagon).
+ * The API response is cached for 60 seconds to reduce server load and improve performance.
+ *
+ * @returns {Promise<Record<string, string>>} A promise resolving to an object containing pole shape styles
+ *                                            mapped to their respective image URLs. If the request fails,
+ *                                            an empty object is returned.
+ *
+ * Example Response:
+ * {
+ *   round: "https://example.com/uploads/round.png",
+ *   round_octagon: "https://example.com/uploads/round_octagon.png",
+ *   square: "https://example.com/uploads/square.png",
+ *   square_octagon: "https://example.com/uploads/square_octagon.png"
+ * }
+ *
+ * Usage:
+ * ```ts
+ * const poleShapeStyles = await fetchPoleShapeStyles();
+ * console.log(poleShapeStyles.square); // Outputs the URL for the square pole shape
+ * ```
+ *
+ * @throws {Error} Throws an error if the API response is invalid or missing necessary data.
+ */
+
+export const fetchPoleShapeStyles = async (): Promise<
+  Record<string, string>
+> => {
+  const url = process.env.NEXT_PUBLIC_ACF_OPTIONS_REST_URL;
+  // console.log("acf url [productServices]", url);
+  if (!url) {
+    throw new Error("ACF Options REST URL is not defined in the environment.");
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      next: { revalidate: 60 }, // Cache the response for 60 seconds
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch pole shape styles: ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+
+    if (!data?.acf) {
+      throw new Error("No ACF data found in the response.");
+    }
+
+    return {
+      round: data.acf.round || "",
+      round_octagon: data.acf.round_octagon || "",
+      square: data.acf.square || "",
+      square_octagon: data.acf.square_octagon || "",
+    };
+  } catch (error) {
+    console.error("Error fetching pole shape styles:", error);
+    return {}; // Return an empty object to avoid breaking the app
+  }
+};
+
+// --------------------------- FETCH POLE SHAPE STYLES FROM ACF ENDS ------------------------------------------------------------

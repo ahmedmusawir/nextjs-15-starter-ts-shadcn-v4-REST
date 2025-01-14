@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import SingleProductContent from "./SingleProductContent";
 import {
   fetchAllProductSlugs,
+  fetchPoleShapeStyles,
   fetchProductBySlug,
   fetchProductVariationsById,
   fetchRelatedProductsById,
@@ -30,6 +31,10 @@ const SingleProductPage = async ({
 
   const singleProduct = await fetchProductBySlug(slug);
 
+  // TESTING ACF POLES STYLES
+  // const poleImages = await fetchPoleShapeStyles();
+  // console.log("Pole Styles [Single Product page.tsx]", poleImages);
+
   // Handle 404 with ISR
   if (!singleProduct) {
     notFound();
@@ -45,7 +50,7 @@ const SingleProductPage = async ({
     related_products: await fetchRelatedProductsById(singleProduct.related_ids),
   };
 
-  console.log("varions [SingleProduct Page]", productWithVariations.variations);
+  // console.log("varions [SingleProduct Page]", productWithVariations.variations);
 
   const relatedProducts = productWithVariations.related_products;
 
@@ -53,7 +58,18 @@ const SingleProductPage = async ({
 
   // Detect the product category
   const customCategory = detectProductCategory(productWithVariations);
-  console.log("custom Category [SingleProduct page]", customCategory);
+  // console.log("custom Category [SingleProduct page]", customCategory);
+
+  // Fetch pole styles for Bloxx category
+  const poleStyles =
+    customCategory.type === "bloxx" ? await fetchPoleShapeStyles() : null;
+
+  // Augment the custom category JSON with pole styles
+  const augmentedCategory = {
+    ...customCategory,
+    ...(poleStyles && { poleStyles }),
+  };
+  console.log("augmentedCategory [SingleProduct page]", augmentedCategory);
 
   return (
     <div>
@@ -70,7 +86,7 @@ const SingleProductPage = async ({
         id="product-category-custom"
         type="application/json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(customCategory),
+          __html: JSON.stringify(augmentedCategory),
         }}
       />
       <SingleProductContent

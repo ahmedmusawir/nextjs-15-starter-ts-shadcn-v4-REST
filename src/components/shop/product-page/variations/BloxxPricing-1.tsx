@@ -126,7 +126,7 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
   // Handle Pole Style Change
   const handlePoleStyleChange = (selectedStyle: string) => {
     setSelectedPoleStyle(selectedStyle);
-    console.log("Selected Pole Style [BloxxPricing]:", selectedStyle); // Optional: for debugging
+    console.log("Selected Pole Style:", selectedStyle); // Optional: for debugging
   };
 
   return (
@@ -173,8 +173,8 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
         </div>
       ) : (
         <div className="mb-4">
-          {/* <h3 className="text-sm text-gray-600">Version</h3> */}
-          {/* <p className="text-gray-500">No Version Available</p> */}
+          <h3 className="text-sm text-gray-600">Version</h3>
+          <p className="text-gray-500">No Version Available</p>
         </div>
       )}
 
@@ -200,14 +200,10 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
       {/* Pole Shape Styles */}
       <div>
         {/* Pole Shape Styles */}
-        <BloxxPricingPoleStyles
-          onSelectionChange={handlePoleStyleChange}
-          setSelectedPoleStyle={setSelectedPoleStyle}
-          selectedPoleStyle={selectedPoleStyle}
-        />
+        <BloxxPricingPoleStyles onSelectionChange={handlePoleStyleChange} />
 
         {/* Debugging or additional logic */}
-        <p className="mt-5">Current Selected Pole Style: {selectedPoleStyle}</p>
+        <p>Current Selected Pole Style: {selectedPoleStyle}</p>
       </div>
     </div>
   );
