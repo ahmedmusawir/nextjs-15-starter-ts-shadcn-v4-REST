@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { useProductStore } from "@/store/useProductStore"; // Import the product store
 import { CartItem } from "@/types/cart";
 
 // Type for the Zustand store
@@ -10,14 +9,14 @@ interface CartStore {
   isLoading: boolean; // To check the loading state
   setIsLoading: (loading: boolean) => void; // To Set loading state
   setIsCartOpen: (isOpen: boolean) => void; // Toggle the cart drawer
-  setCartItems: (newCartItems: CartItem[]) => void; // Directly update cart items
-  getItemQuantity: (itemId: number) => number; // Get the quantity of a specific item
-  increaseCartQuantity: (itemId: number) => void; // Add item to cart by ID
-  decreaseCartQuantity: (itemId: number) => void; // Decrement the quantity of a specific item
-  removeFromCart: (itemId: number) => void; // Remove an item from the cart
+  setCartItems: (
+    updater: CartItem[] | ((prevItems: CartItem[]) => CartItem[])
+  ) => void; // Directly update cart items or use a callback
+  addOrUpdateCartItem: (item: CartItem) => void; // Add or update a cart item
+  removeCartItem: (itemId: number) => void; // Remove an item from the cart
   clearCart: () => void; // Clear the entire cart
-  cartDetails: () => CartItem[]; // Get detailed cart items with product info
-  subtotal: () => number; // Calculate the subtotal of all items in the cart
+  getCartDetails: () => CartItem[]; // Get detailed cart items
+  calculateSubtotal: () => number; // Calculate the subtotal of all items in the cart
 }
 
 // Define the Zustand store with persist middleware
@@ -27,94 +26,59 @@ export const useCartStore = create<CartStore>()(
       cartItems: [],
       isCartOpen: false,
       isLoading: true,
+
       setIsLoading: (loading) => set({ isLoading: loading }),
+
       setIsCartOpen: (isOpen) => set({ isCartOpen: isOpen }),
-      setCartItems: (newCartItems: CartItem[]) =>
-        set({ cartItems: newCartItems }),
 
-      getItemQuantity: (itemId) =>
-        get().cartItems.find((item) => item.id === itemId)?.quantity || 0,
+      setCartItems: (updater) =>
+        set((state) => ({
+          cartItems:
+            typeof updater === "function" ? updater(state.cartItems) : updater,
+        })),
 
-      increaseCartQuantity: (itemId: number) => {
-        const state = get();
-        const existingItem = state.cartItems.find((item) => item.id === itemId);
+      addOrUpdateCartItem: (newItem) => {
+        set((state) => {
+          const existingItemIndex = state.cartItems.findIndex(
+            (item) => item.id === newItem.id
+          );
 
-        if (existingItem) {
-          // Increment the quantity for the existing item
-          set({
-            cartItems: state.cartItems.map((item) =>
-              item.id === itemId
-                ? { ...item, quantity: item.quantity + 1 }
-                : item
-            ),
-          });
-        } else {
-          // Fetch product details from the product store
-          const product = useProductStore
-            .getState()
-            .products.find((p) => p.id === itemId);
+          if (existingItemIndex !== -1) {
+            // Update existing item
+            const updatedCartItems = [...state.cartItems];
+            updatedCartItems[existingItemIndex] = {
+              ...updatedCartItems[existingItemIndex],
+              quantity:
+                updatedCartItems[existingItemIndex].quantity + newItem.quantity,
+              variations:
+                newItem.variations ||
+                updatedCartItems[existingItemIndex].variations,
+              customFields:
+                newItem.customFields ||
+                updatedCartItems[existingItemIndex].customFields,
+            };
 
-          if (!product) {
-            console.warn(`Product with ID ${itemId} not found in ProductStore`);
-            return;
+            return { cartItems: updatedCartItems };
           }
 
-          // Add a new item with full product details and quantity 1
-          set({
-            cartItems: [
-              ...state.cartItems,
-              {
-                id: itemId,
-                quantity: 1,
-                productDetails: product,
-              },
-            ],
-          });
-        }
+          // Add new item
+          return { cartItems: [...state.cartItems, newItem] };
+        });
       },
 
-      decreaseCartQuantity: (itemId) =>
-        set((state) => {
-          const existingItem = state.cartItems.find(
-            (item) => item.id === itemId
-          );
-          if (existingItem?.quantity === 1) {
-            return {
-              cartItems: state.cartItems.filter((item) => item.id !== itemId),
-            };
-          } else {
-            return {
-              cartItems: state.cartItems.map((item) =>
-                item.id === itemId
-                  ? { ...item, quantity: item.quantity - 1 }
-                  : item
-              ),
-            };
-          }
-        }),
-
-      removeFromCart: (itemId) =>
+      removeCartItem: (itemId) =>
         set((state) => ({
           cartItems: state.cartItems.filter((item) => item.id !== itemId),
         })),
 
       clearCart: () => set({ cartItems: [] }),
 
-      cartDetails: () => {
-        const cartItems = get().cartItems || [];
-        return cartItems; // No additional mapping or transformation needed
-      },
+      getCartDetails: () => get().cartItems,
 
-      subtotal: () => {
-        const cartItems = get().cartItems || [];
+      calculateSubtotal: () => {
         return parseFloat(
-          cartItems
-            .reduce((acc, cartItem) => {
-              const price = parseFloat(
-                cartItem.productDetails.price.replace("$", "")
-              );
-              return acc + price * cartItem.quantity;
-            }, 0)
+          get()
+            .cartItems.reduce((total, item) => total + item.price, 0)
             .toFixed(2)
         );
       },

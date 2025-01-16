@@ -20,7 +20,7 @@ import "./globals.scss";
 import Navbar from "@/components/global/Navbar";
 import Main from "@/components/common/Main";
 import Footer from "@/components/global/Footer";
-import Cart from "@/components/cart/Cart";
+import CartSlide from "@/components/cart/CartSlide";
 // import { Toaster } from "@/components/ui/toaster";
 // import { ThemeProvider } from "./providers/ThemeProvider";
 
@@ -47,7 +47,7 @@ export default async function RootLayout({
               : "This is a Layout container. Must have children"}
           </Main>
           <Footer />
-          <Cart />
+          <CartSlide />
         </div>
         {/* <Toaster /> */}
       </body>

@@ -21,8 +21,8 @@ import Spinner from "../common/Spinner";
 const Navbar = () => {
   const pathname = usePathname();
   // Access Zustand store
-  const { cartDetails, isLoading } = useCartStore();
-  const cartItemCount = cartDetails().length;
+  const { getCartDetails, isLoading } = useCartStore();
+  const cartItemCount = getCartDetails().length;
   // console.log("Cart Item Count [Navbar]", cartDetails);
 
   interface NavLinkProps {

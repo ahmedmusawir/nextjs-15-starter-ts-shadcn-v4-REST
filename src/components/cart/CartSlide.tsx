@@ -13,14 +13,14 @@ import Image from "next/image";
 import Link from "next/link";
 import CartImage from "./CartImage";
 
-const Cart = () => {
+const CartSlide = () => {
   const router = useRouter();
 
   // Access Zustand store
   const {
     cartItems,
-    subtotal,
-    removeFromCart,
+    calculateSubtotal,
+    removeCartItem,
     setIsCartOpen,
     isCartOpen,
     setCartItems,
@@ -36,7 +36,7 @@ const Cart = () => {
 
   // Redirect to shop if cart is empty after removal
   const handleRemoveCartItem = (id: number) => {
-    removeFromCart(id);
+    removeCartItem(id);
     if (cartItems.length === 1) {
       router.push("/shop");
     }
@@ -99,16 +99,12 @@ const Cart = () => {
                             <div className="ml-4 flex flex-1 flex-col">
                               <div>
                                 <div className="flex justify-between text-base font-medium text-gray-900">
-                                  <h3>{cartItem.productDetails.name}</h3>
-                                  <p className="ml-4">
-                                    {cartItem.productDetails.price}
-                                  </p>
+                                  <h3>{cartItem.name}</h3>
+                                  <p className="ml-4">{cartItem.price}</p>
                                 </div>
-                                {/* <p className="mt-1 text-sm text-gray-500">
-                                  {cartItem.productDetails.productCategories.nodes
-                                    .map((cat) => cat.name)
-                                    .join(", ")}
-                                </p> */}
+                                <p className="mt-1 text-sm text-gray-500">
+                                  {cartItem.category}
+                                </p>
                               </div>
                               <div className="flex flex-1 items-end justify-between text-sm">
                                 <div className="flex items-center">
@@ -158,7 +154,7 @@ const Cart = () => {
                 <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                   <div className="flex justify-between text-base font-medium text-gray-900">
                     <p>Subtotal</p>
-                    <p>${subtotal()}</p>
+                    <p>${calculateSubtotal()}</p>
                   </div>
                   <div className="mt-6">
                     <Link
@@ -206,4 +202,4 @@ const Cart = () => {
   );
 };
 
-export default Cart;
+export default CartSlide;

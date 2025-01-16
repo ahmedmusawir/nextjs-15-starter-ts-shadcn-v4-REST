@@ -72,6 +72,16 @@ const Navbar = () => {
       {/* NAVIGATION */}
       <nav className="hidden sm:ml-6 sm:flex flex-grow justify-center items-center">
         <NavLink href="/shop">Shop</NavLink>
+        {/* <NavLink
+          href="/shop"
+          onClick={() => {
+            const { resetPagination } = useNumberedPaginationStore.getState();
+            resetPagination(initialProducts, initialCursor); // Reset Zustand state
+          }}
+        >
+          Shop
+        </NavLink> */}
+
         <NavLink href="/blog">Blog</NavLink>
         {/* <NavLink href="/admin-dashboard">Admin</NavLink> */}
         {/* <NavLink href="/customer-dashboard">Customer</NavLink> */}
@@ -110,6 +120,19 @@ const Navbar = () => {
             <DropdownMenuItem>
               <Link href="/shop">Shop</Link>
             </DropdownMenuItem>
+            {/* <DropdownMenuItem>
+              <Link
+                href="/shop"
+                onClick={() => {
+                  const { resetPagination } =
+                    useNumberedPaginationStore.getState();
+                  resetPagination(initialProducts, initialCursor); // Reset Zustand state
+                }}
+              >
+                Shop
+              </Link>
+            </DropdownMenuItem> */}
+
             <DropdownMenuItem>
               <Link href="/blog">Blog</Link>
             </DropdownMenuItem>

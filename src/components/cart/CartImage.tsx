@@ -21,7 +21,7 @@ const CartImage = ({ cartItem, imgHeight, imgWidth }: Props) => {
       )}
       <Image
         src={"/placeholder-image.jpg"} // Add a fallback placeholder if necessary
-        alt={cartItem.productDetails.name || "Product Image"}
+        alt={cartItem.name || "Product Image"}
         width={imgWidth}
         height={imgHeight}
         className={`h-full w-full object-cover object-center transition-opacity duration-500 ${

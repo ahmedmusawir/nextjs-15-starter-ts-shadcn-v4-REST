@@ -11,7 +11,11 @@ interface BloxxPricingProps {
   setCartItem: React.Dispatch<React.SetStateAction<CartItem>>; // New prop
 }
 
-const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
+const BloxxPricing = ({
+  onPriceChange,
+  cartItem,
+  setCartItem,
+}: BloxxPricingProps) => {
   const [variations, setVariations] = useState<ProductVariation[]>([]);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -33,6 +37,124 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
       setVariations(data);
     }
   }, []);
+
+  // Syncs up the Pole Size to CartItem when Pole Shape is changed
+  useEffect(() => {
+    if (!selectedShape) return;
+
+    const defaultSize = filteredSizes[0] || "Unknown";
+
+    // Synchronize default size and cart item
+    setSelectedSize(defaultSize);
+    setCartItem((prev) => ({
+      ...prev,
+      variations: prev.variations.map((variation) =>
+        variation.name === "Pole Size"
+          ? { ...variation, value: defaultSize }
+          : variation
+      ),
+    }));
+  }, [selectedShape, filteredSizes]);
+
+  // Synchronize Pole Style when the shape changes
+  useEffect(() => {
+    if (!selectedShape) return;
+
+    // Determine default style based on the selected shape
+    let defaultStyle: string | null = null;
+    switch (selectedShape.toLowerCase()) {
+      case "square":
+        defaultStyle = "square";
+        break;
+      case "round":
+        defaultStyle = "round";
+        break;
+      case "octagon":
+        defaultStyle = "round_octagon";
+        break;
+      default:
+        defaultStyle = null;
+    }
+
+    // Synchronize default style and cart item
+    setSelectedPoleStyle(defaultStyle);
+    setCartItem((prev) => ({
+      ...prev,
+      variations: prev.variations.map((variation) =>
+        variation.name === "Pole Style"
+          ? { ...variation, value: defaultStyle || "Unknown" }
+          : variation
+      ),
+    }));
+  }, [selectedShape]);
+
+  // Synchronize Pole Version when the shape changes or on mount
+  useEffect(() => {
+    if (!filteredVersions.length) return;
+
+    const defaultVersion = filteredVersions[0] || "Unknown";
+
+    // Synchronize default version and cart item
+    setSelectedVersion(defaultVersion);
+    setCartItem((prev) => ({
+      ...prev,
+      variations: prev.variations.map((variation) =>
+        variation.name === "Version"
+          ? { ...variation, value: defaultVersion }
+          : variation
+      ),
+    }));
+  }, [filteredVersions]);
+
+  // Initialize default selections for pole shape, style, size, and update the cart item.
+  useEffect(() => {
+    if (variations.length > 0) {
+      const validShapes = getValidShapes();
+
+      if (validShapes.length > 0) {
+        const defaultShape = validShapes[0];
+        setSelectedShape(defaultShape);
+        filterOptionsByShape(defaultShape);
+
+        let defaultStyle: string | null = null;
+        switch (defaultShape.toLowerCase()) {
+          case "square":
+            defaultStyle = "square";
+            break;
+          case "round":
+            defaultStyle = "round";
+            break;
+          case "octagon":
+            defaultStyle = "round_octagon";
+            break;
+          default:
+            defaultStyle = null;
+        }
+        setSelectedPoleStyle(defaultStyle);
+
+        const defaultSize = variations
+          .find(
+            (variation) =>
+              variation.attributes.find(
+                (attr) =>
+                  attr.name === "Pole Shape" && attr.option === defaultShape
+              ) !== undefined
+          )
+          ?.attributes.find((attr) => attr.name === "Pole Size")?.option;
+
+        setSelectedSize(defaultSize || null);
+
+        setCartItem((prev) => ({
+          ...prev,
+          variations: [
+            { name: "Pole Shape", value: defaultShape },
+            { name: "Pole Style", value: defaultStyle || "Unknown" },
+            { name: "Pole Size", value: defaultSize || "Unknown" },
+          ],
+        }));
+      }
+    }
+  }, [variations]);
 
   // Extract unique Pole Shapes
   const getValidShapes = (): string[] => {
@@ -102,6 +224,13 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
     const price = matchedVariation ? parseFloat(matchedVariation.price) : null;
     setCurrentPrice(price ? `$${price}` : "N/A");
     onPriceChange(price); // Pass the price to the parent component
+
+    // Update cart item
+    setCartItem((prev) => ({
+      ...prev,
+      basePrice: price || 0,
+      price: (price || 0) * prev.quantity,
+    }));
   };
 
   // Initialize default selections on mount
@@ -143,50 +272,161 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
   }, [selectedShape]);
 
   // Handle shape selection
+  // const handleShapeSelection = (shape: string) => {
+  //   setSelectedShape(shape);
+  //   filterOptionsByShape(shape); // Reset versions and sizes for the new shape
+
+  //   // Update pole style based on selected shape
+  //   let defaultStyle: string | null = null;
+  //   switch (shape.toLowerCase()) {
+  //     case "square":
+  //       defaultStyle = "square";
+  //       break;
+  //     case "round":
+  //       defaultStyle = "round";
+  //       break;
+  //     case "octagon":
+  //       defaultStyle = "round_octagon"; // Default for Octagon
+  //       break;
+  //     default:
+  //       defaultStyle = null;
+  //   }
+
+  //   setSelectedPoleStyle(defaultStyle);
+
+  //   // Update cart item
+  //   setCartItem((prev) => {
+  //     const updatedVariations = [
+  //       ...(prev.variations || []).filter((v) => v.name !== "Pole Shape"),
+  //       { name: "Pole Shape", value: shape },
+  //     ];
+  //     return { ...prev, variations: updatedVariations };
+  //   });
+  // };
+  // Handle shape selection
   const handleShapeSelection = (shape: string) => {
-    setSelectedShape(shape);
+    setSelectedShape(shape); // Update the selected shape
     filterOptionsByShape(shape); // Reset versions and sizes for the new shape
 
-    // Update pole style based on selected shape
+    // Determine the default pole style based on the shape
+    let defaultStyle: string | null = null;
     switch (shape.toLowerCase()) {
       case "square":
-        setSelectedPoleStyle("square");
+        defaultStyle = "square";
         break;
       case "round":
-        setSelectedPoleStyle("round");
+        defaultStyle = "round";
         break;
       case "octagon":
-        setSelectedPoleStyle("round_octagon"); // Default for Octagon
+        defaultStyle = "round_octagon"; // Default for Octagon
         break;
       default:
-        setSelectedPoleStyle(null); // Reset if no match
+        defaultStyle = null;
     }
+    setSelectedPoleStyle(defaultStyle);
+
+    // Ensure the first size option is selected as default
+    const defaultSize = filteredSizes.length > 0 ? filteredSizes[0] : "Unknown";
+    setSelectedSize(defaultSize);
+
+    // Update the cart item to reflect the selected shape, style, and size
+    setCartItem((prev) => {
+      const updatedVariations = [
+        ...(prev.variations || []).filter(
+          (v) => v.name !== "Pole Shape" && v.name !== "Pole Size"
+        ),
+        { name: "Pole Shape", value: shape },
+        { name: "Pole Size", value: defaultSize },
+      ];
+
+      return {
+        ...prev,
+        variations: updatedVariations,
+      };
+    });
   };
 
   // Handle Pole Style Change
   const handlePoleStyleChange = (selectedStyle: string) => {
     setSelectedPoleStyle(selectedStyle);
-    console.log("Selected Pole Style [BloxxPricing]:", selectedStyle); // Optional: for debugging
+
+    // Update cart item
+    setCartItem((prev) => {
+      const updatedVariations = [
+        ...(prev.variations || []).filter((v) => v.name !== "Pole Style"),
+        { name: "Pole Style", value: selectedStyle },
+      ];
+      return { ...prev, variations: updatedVariations };
+    });
   };
 
   // Handle Custom Size When the 'Other' Pole Size is Chosen (Mainly for Round and Octagon)
   const handleCustomSizeChange = (value: string) => {
     setCustomSize(value);
+
     if (value.trim()) {
       setError(null); // Clear the error if the input is valid
+      setCartItem((prev) => {
+        const updatedCustomFields = [
+          ...(prev.customFields || []).filter((f) => f.name !== "Custom Size"),
+          { name: "Custom Size", value: value },
+        ];
+        return { ...prev, customFields: updatedCustomFields };
+      });
     } else {
       setError("Please enter a custom size.");
     }
   };
 
-  // Validation for custom size text field
-  const validateCustomSize = () => {
-    if (selectedSize === "Other" && (!customSize || !customSize.trim())) {
-      setError("Custom size is required when 'Other' is selected.");
-      return false;
+  // Handle Pole Size options
+  const handleSizeSelection = (size: string) => {
+    setSelectedSize(size);
+
+    if (size !== "Other") {
+      setCustomSize(null); // Clear custom size if "Other" is not selected
+      setError(null); // Clear any validation error
     }
-    return true;
+
+    // Update cart item
+    setCartItem((prev) => {
+      const updatedVariations = [
+        ...(prev.variations || []).filter((v) => v.name !== "Pole Size"),
+        { name: "Pole Size", value: size },
+      ];
+
+      // If "Other" is selected, ensure customFields are reset
+      const updatedCustomFields = size === "Other" ? [] : prev.customFields;
+
+      return {
+        ...prev,
+        variations: updatedVariations,
+        customFields: updatedCustomFields,
+      };
+    });
   };
+
+  // Handle Version Selection
+  const handleVersionSelection = (version: string) => {
+    setSelectedVersion(version);
+
+    // Update the cart item with the selected version
+    setCartItem((prev) => {
+      const updatedVariations = [
+        ...(prev.variations || []).filter((v) => v.name !== "Version"),
+        { name: "Version", value: version },
+      ];
+      return { ...prev, variations: updatedVariations };
+    });
+  };
+
+  // Validation for custom size text field
+  // const validateCustomSize = () => {
+  //   if (selectedSize === "Other" && (!customSize || !customSize.trim())) {
+  //     setError("Custom size is required when 'Other' is selected.");
+  //     return false;
+  //   }
+  //   return true;
+  // };
 
   return (
     <div className="mt-10">
@@ -211,7 +451,34 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
       </div>
 
       {/* Version Options */}
+      {/* Version Options */}
       {filteredVersions.length > 0 ? (
+        <div className="mb-4">
+          <h3 className="text-sm text-gray-600">Version</h3>
+          <div className="flex gap-3 mt-2">
+            {filteredVersions.map((version) => (
+              <button
+                key={version}
+                onClick={() => handleVersionSelection(version)}
+                className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm ${
+                  selectedVersion === version
+                    ? "bg-indigo-500 text-white"
+                    : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                {version}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="mb-4">
+          {/* <h3 className="text-sm text-gray-600">Version</h3> */}
+          {/* <p className="text-gray-500">No Version Available</p> */}
+        </div>
+      )}
+
+      {/* {filteredVersions.length > 0 ? (
         <div className="mb-4">
           <h3 className="text-sm text-gray-600">Version</h3>
           <div className="flex gap-3 mt-2">
@@ -232,10 +499,10 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
         </div>
       ) : (
         <div className="mb-4">
-          {/* <h3 className="text-sm text-gray-600">Version</h3> */}
-          {/* <p className="text-gray-500">No Version Available</p> */}
+          <h3 className="text-sm text-gray-600">Version</h3>
+          <p className="text-gray-500">No Version Available</p>
         </div>
-      )}
+      )} */}
 
       {/* Pole Size Options */}
       <div className="mb-4">
@@ -244,13 +511,7 @@ const BloxxPricing = ({ onPriceChange }: BloxxPricingProps) => {
           {filteredSizes.map((size) => (
             <button
               key={size}
-              onClick={() => {
-                setSelectedSize(size);
-                if (size !== "Other") {
-                  setCustomSize(null); // Clear custom size if "Other" is not selected
-                  setError(null); // Clear any validation error
-                }
-              }}
+              onClick={() => handleSizeSelection(size)}
               className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm ${
                 selectedSize === size
                   ? "bg-indigo-500 text-white"
