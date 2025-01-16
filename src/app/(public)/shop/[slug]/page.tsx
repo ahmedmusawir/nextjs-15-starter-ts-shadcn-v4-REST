@@ -50,7 +50,7 @@ const SingleProductPage = async ({
     related_products: await fetchRelatedProductsById(singleProduct.related_ids),
   };
 
-  // console.log("varions [SingleProduct Page]", productWithVariations.variations);
+  console.log("varions [SingleProduct Page]", productWithVariations.variations);
 
   const relatedProducts = productWithVariations.related_products;
 

@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { ProductVariation } from "@/types/product";
-import { CartItem } from "@/types/cart";
 
 interface Props {
   onPriceChange: (price: number | null) => void; // Prop to communicate price changes
-  cartItem: CartItem; // Current cart item
-  setCartItem: React.Dispatch<React.SetStateAction<CartItem>>; // Function to update cart item
 }
 
-const ComplexVariationPricing = ({
-  onPriceChange,
-  cartItem,
-  setCartItem,
-}: Props) => {
+const ComplexVariationPricing = ({ onPriceChange }: Props) => {
   const [variations, setVariations] = useState<ProductVariation[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string>
@@ -34,41 +27,6 @@ const ComplexVariationPricing = ({
     }
   }, []);
 
-  // Calculate current price and notify parent
-  useEffect(() => {
-    const matchedVariation = variations.find((variation) =>
-      variation.attributes.every(
-        (attr) => selectedOptions[attr.name] === attr.option
-      )
-    );
-
-    const price = matchedVariation ? parseFloat(matchedVariation.price) : null;
-    onPriceChange(price); // Notify parent of price change
-  }, [selectedOptions, variations, onPriceChange]);
-
-  // Set default selections on mount
-  useEffect(() => {
-    if (variations.length > 0) {
-      const initialSelections: Record<string, string> = {};
-      const initialVariations: { name: string; value: string }[] = []; // Explicit type
-
-      variations[0]?.attributes.forEach((attr) => {
-        initialSelections[attr.name] = attr.option; // Set defaults
-        initialVariations.push({ name: attr.name, value: attr.option }); // Add to variations
-      });
-
-      setSelectedOptions(initialSelections);
-
-      // Update cart item with default variations
-      setCartItem((prev) => ({
-        ...prev,
-        variations: initialVariations, // Correctly typed
-      }));
-    }
-  }, [variations, setCartItem]);
-
-  // ------------------ UTILITY FUNCTIONS ----------------------------------
-
   // Filter available options based on current selections
   const filterOptions = (attributeName: string): string[] => {
     const options = new Set<string>();
@@ -88,32 +46,25 @@ const ComplexVariationPricing = ({
     return Array.from(options);
   };
 
-  // ------------------ HANDLER FUNCTIONS ----------------------------------
-
-  // Handle option selection
-  // const handleOptionClick = (attributeName: string, option: string) => {
-  //   setSelectedOptions((prev) => ({
-  //     ...prev,
-  //     [attributeName]: option,
-  //   }));
-  // };
-
   // Handle option selection
   const handleOptionClick = (attributeName: string, option: string) => {
     setSelectedOptions((prev) => ({
       ...prev,
       [attributeName]: option,
     }));
-
-    // Update cart item with selected variations
-    setCartItem((prev) => {
-      const updatedVariations = [
-        ...(prev.variations || []).filter((v) => v.name !== attributeName),
-        { name: attributeName, value: option },
-      ];
-      return { ...prev, variations: updatedVariations };
-    });
   };
+
+  // Calculate current price and notify parent
+  useEffect(() => {
+    const matchedVariation = variations.find((variation) =>
+      variation.attributes.every(
+        (attr) => selectedOptions[attr.name] === attr.option
+      )
+    );
+
+    const price = matchedVariation ? parseFloat(matchedVariation.price) : null;
+    onPriceChange(price); // Notify parent of price change
+  }, [selectedOptions, variations, onPriceChange]);
 
   return (
     <div className="mt-10">

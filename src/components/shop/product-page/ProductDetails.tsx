@@ -107,7 +107,6 @@ const ProductDetails = ({ product }: Props) => {
         <ProductInfo product={product} />
 
         {/* Render the appropriate pricing module */}
-        {/* Render the appropriate pricing module */}
         {renderPricingModule(
           productCategory,
           setBasePrice,

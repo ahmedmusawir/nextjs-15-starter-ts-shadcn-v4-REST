@@ -2,18 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { ProductVariation } from "@/types/product";
-import { CartItem } from "@/types/cart";
 
 interface SingleVariationPricingProps {
   onPriceChange: (price: number | null) => void;
-  cartItem: CartItem; // To track the cart item data
-  setCartItem: React.Dispatch<React.SetStateAction<CartItem>>; // To update the cart item state
 }
 
 const SingleVariationPricing = ({
   onPriceChange,
-  cartItem,
-  setCartItem,
 }: SingleVariationPricingProps) => {
   const [variations, setVariations] = useState<ProductVariation[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -36,37 +31,6 @@ const SingleVariationPricing = ({
     }
   }, [onPriceChange]);
 
-  // Fetch and parse variations JSON on mount
-  useEffect(() => {
-    const variationsScript = document.getElementById("product-variations");
-    if (variationsScript) {
-      const data = JSON.parse(variationsScript.textContent || "[]");
-      setVariations(data);
-
-      if (data.length > 0) {
-        const defaultOption = data[0]?.attributes[0]?.option || null;
-        setSelectedOption(defaultOption);
-
-        // Set initial price
-        const defaultPrice = parseFloat(data[0]?.price) || null;
-        onPriceChange(defaultPrice);
-
-        // Update cart item with default selection
-        if (defaultOption) {
-          setCartItem((prev) => ({
-            ...prev,
-            variations: [
-              ...(prev.variations || []).filter(
-                (variation) => variation.name !== "Option"
-              ),
-              { name: "Option", value: defaultOption },
-            ],
-          }));
-        }
-      }
-    }
-  }, [onPriceChange, setCartItem]);
-
   // Handle option selection
   const handleOptionClick = (option: string) => {
     setSelectedOption(option);
@@ -77,29 +41,7 @@ const SingleVariationPricing = ({
     );
     const price = matchedVariation ? parseFloat(matchedVariation.price) : null;
     onPriceChange(price);
-
-    // Update cart item with the selected option
-    setCartItem((prev) => ({
-      ...prev,
-      variations: [
-        ...(prev.variations || []).filter(
-          (variation) => variation.name !== "Option"
-        ),
-        { name: "Option", value: option },
-      ],
-    }));
   };
-
-  // const handleOptionClick = (option: string) => {
-  //   setSelectedOption(option);
-
-  //   // Update the price based on the selected option
-  //   const matchedVariation = variations.find((variation) =>
-  //     variation.attributes.some((attr) => attr.option === option)
-  //   );
-  //   const price = matchedVariation ? parseFloat(matchedVariation.price) : null;
-  //   onPriceChange(price);
-  // };
 
   return (
     <div className="mt-10">
