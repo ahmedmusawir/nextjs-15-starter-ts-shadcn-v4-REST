@@ -14,6 +14,7 @@ import SingleVariationPricing from "./variations/SingleVariationPricing";
 import { renderPricingModule } from "@/lib/renderPricingModules";
 import CurrentPriceDisplay from "./CurrentPriceDisplay";
 import { CartItem } from "@/types/cart";
+import ManageQuantity from "./ManageQuantity";
 
 interface Props {
   product: Product;
@@ -21,10 +22,11 @@ interface Props {
 
 const ProductDetails = ({ product }: Props) => {
   const [basePrice, setBasePrice] = useState<number | null>(null);
-  const [quantity, setQuantity] = useState<number>(1); // Default to 1
+  // const [quantity, setQuantity] = useState<number>(1); // Default to 1
   const [productCategory, setProductCategory] = useState<{
     type: string;
   } | null>(null);
+  const [quantity, setQuantity] = useState(1);
 
   // Add CartItem state to the component
   const [cartItem, setCartItem] = useState<CartItem>({
@@ -72,6 +74,9 @@ const ProductDetails = ({ product }: Props) => {
     return <Spinner />; // Show a loading state until the category is fetched
   }
 
+  const handleIncrement = () => setQuantity((prev) => prev + 1);
+  const handleDecrement = () => setQuantity((prev) => Math.max(1, prev - 1));
+
   // Add this function inside the ProductDetails component
   const handleAddToCart = () => {
     const poleSizeVariation = cartItem.variations?.find(
@@ -105,7 +110,6 @@ const ProductDetails = ({ product }: Props) => {
       {/* Product info */}
       <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
         <ProductInfo product={product} />
-
         {/* Render the appropriate pricing module */}
         {renderPricingModule(
           productCategory,
@@ -120,8 +124,7 @@ const ProductDetails = ({ product }: Props) => {
           }
         )}
 
-        {/* Quantity Selector */}
-        <div className="mt-10">
+        {/* <div className="mt-10">
           <label
             htmlFor="quantity"
             className="text-sm font-medium text-gray-600"
@@ -136,17 +139,25 @@ const ProductDetails = ({ product }: Props) => {
             onChange={(e) => setQuantity(Number(e.target.value))}
             className="ml-2 p-2 border rounded-md text-gray-900"
           />
-        </div>
-
+        </div> */}
         {/* Current Price Display */}
         <CurrentPriceDisplay basePrice={basePrice} quantity={quantity} />
 
-        {/* Add to Cart Button */}
-        {/* Add to Cart Button */}
-        <AddToCartButton
-          cartItem={cartItem}
-          handleAddToCart={handleAddToCart}
-        />
+        {/* The Quantity & Add to Cart button block */}
+        <div className="flex items-center space-x-8 my-10">
+          {/* Quantity Selector */}
+          <ManageQuantity
+            quantity={quantity}
+            onIncrement={handleIncrement}
+            onDecrement={handleDecrement}
+          />
+
+          {/* Add to Cart Button */}
+          <AddToCartButton
+            cartItem={cartItem}
+            handleAddToCart={handleAddToCart}
+          />
+        </div>
 
         {/* Additional Details w/ Accordion */}
         <AdditionalDetailsAccordion product={product} />

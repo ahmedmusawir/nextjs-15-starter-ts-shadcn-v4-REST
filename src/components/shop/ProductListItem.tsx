@@ -13,22 +13,12 @@ interface Props {
 
 const ProductListItem = ({ product }: Props) => {
   const featuredImage = product.images[0]?.src || "/placeholder.jpg";
-  const { increaseCartQuantity, setIsCartOpen, removeFromCart, cartItems } =
-    useCartStore();
+  const { setIsCartOpen, cartItems } = useCartStore();
 
   const isProductInCart = (productId: number) => {
     return cartItems.some((item) => item.id === productId);
   };
 
-  const handleAddToCart = (id: number) => {
-    // console.log("Prod ID: (ShopPageContent)", id);
-    increaseCartQuantity(id);
-    setIsCartOpen(true);
-  };
-  const handleRemoveCartItem = (id: number) => {
-    removeFromCart(id);
-    setIsCartOpen(true);
-  };
   return (
     <div key={product.id} className="group relative my-5">
       <Link href={`/shop/${product.slug}`}>
@@ -64,24 +54,6 @@ const ProductListItem = ({ product }: Props) => {
             SELECT OPTIONS
           </button>
         </Link>
-        {/* {!isProductInCart(product.id) && (
-          <button
-            type="button"
-            className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 float-right xl:mb-10"
-            onClick={() => handleAddToCart(product.id)}
-          >
-            Add To Cart
-          </button>
-        )}
-        {isProductInCart(product.id) && (
-          <button
-            type="button"
-            className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 float-right"
-            onClick={() => handleRemoveCartItem(product.id)}
-          >
-            Remove Item
-          </button>
-        )} */}
       </section>
     </div>
   );
