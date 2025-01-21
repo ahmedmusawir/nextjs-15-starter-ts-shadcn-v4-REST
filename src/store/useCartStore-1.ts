@@ -16,9 +16,7 @@ interface CartStore {
   removeCartItem: (itemId: number) => void; // Remove an item from the cart
   clearCart: () => void; // Clear the entire cart
   getCartDetails: () => CartItem[]; // Get detailed cart items
-  increaseCartQuantity: (itemId: number) => void; // Add item to cart by ID
-  decreaseCartQuantity: (itemId: number) => void; // Decrement the quantity of a specific item
-  subtotal: () => number; // Calculate the subtotal of all items in the cart
+  calculateSubtotal: () => number; // Calculate the subtotal of all items in the cart
 }
 
 // Define the Zustand store with persist middleware
@@ -77,64 +75,13 @@ export const useCartStore = create<CartStore>()(
 
       getCartDetails: () => get().cartItems,
 
-      increaseCartQuantity: (itemId: number) => {
-        set((state) => {
-          const existingItem = state.cartItems.find(
-            (item) => item.id === itemId
-          );
-          if (existingItem) {
-            return {
-              cartItems: state.cartItems.map((item) =>
-                item.id === itemId
-                  ? { ...item, quantity: item.quantity + 1 }
-                  : item
-              ),
-            };
-          }
-          return state; // No changes if item doesn't exist
-        });
-      },
-
-      decreaseCartQuantity: (itemId: number) => {
-        set((state) => {
-          const existingItem = state.cartItems.find(
-            (item) => item.id === itemId
-          );
-          if (existingItem?.quantity === 1) {
-            return {
-              cartItems: state.cartItems.filter((item) => item.id !== itemId),
-            };
-          } else if (existingItem) {
-            return {
-              cartItems: state.cartItems.map((item) =>
-                item.id === itemId
-                  ? { ...item, quantity: item.quantity - 1 }
-                  : item
-              ),
-            };
-          }
-          return state; // No changes if item doesn't exist
-        });
-      },
-
-      subtotal: () => {
+      calculateSubtotal: () => {
         return parseFloat(
           get()
-            .cartItems.reduce(
-              (total, item) => total + item.price * item.quantity,
-              0
-            )
+            .cartItems.reduce((total, item) => total + item.price, 0)
             .toFixed(2)
         );
       },
-
-      // calculateSubtotal: () => {
-      //   return parseFloat(
-      //     get()
-      //       .cartItems.reduce((total, item) => total + item.price, 0)
-      //       .toFixed(2)
-      //   );
-      // },
     }),
     {
       name: "cart-storage",

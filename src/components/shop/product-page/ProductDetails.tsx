@@ -15,6 +15,7 @@ import { renderPricingModule } from "@/lib/renderPricingModules";
 import CurrentPriceDisplay from "./CurrentPriceDisplay";
 import { CartItem } from "@/types/cart";
 import ManageQuantity from "./ManageQuantity";
+import { useCartStore } from "@/store/useCartStore";
 
 interface Props {
   product: Product;
@@ -79,6 +80,8 @@ const ProductDetails = ({ product }: Props) => {
 
   // Add this function inside the ProductDetails component
   const handleAddToCart = () => {
+    const { setCartItems, setIsCartOpen } = useCartStore.getState(); // Access Zustand store here
+
     const poleSizeVariation = cartItem.variations?.find(
       (variation) => variation.name === "Pole Size"
     );
@@ -97,9 +100,25 @@ const ProductDetails = ({ product }: Props) => {
       }
     }
 
+    // Update Zustand store
+    setCartItems((prevItems: CartItem[]) => {
+      const existingItem = prevItems.find((item) => item.id === cartItem.id);
+      if (existingItem) {
+        // Update quantity if item already exists
+        return prevItems.map((item) =>
+          item.id === cartItem.id
+            ? { ...item, quantity: item.quantity + cartItem.quantity }
+            : item
+        );
+      }
+      // Add new item to the cart
+      return [...prevItems, cartItem];
+    });
+
+    setIsCartOpen(true); // Open the side cart
+
     // If validation passes, proceed
     console.log("Generated Cart Item:", cartItem);
-    // Dispatch to Zustand store here in the next steps
   };
 
   return (
@@ -124,22 +143,6 @@ const ProductDetails = ({ product }: Props) => {
           }
         )}
 
-        {/* <div className="mt-10">
-          <label
-            htmlFor="quantity"
-            className="text-sm font-medium text-gray-600"
-          >
-            Quantity
-          </label>
-          <input
-            id="quantity"
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            className="ml-2 p-2 border rounded-md text-gray-900"
-          />
-        </div> */}
         {/* Current Price Display */}
         <CurrentPriceDisplay basePrice={basePrice} quantity={quantity} />
 

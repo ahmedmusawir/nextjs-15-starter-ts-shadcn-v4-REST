@@ -1,4 +1,5 @@
 import React from "react";
+import { HeartIcon, MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
 
 interface ManageQuantityProps {
   quantity: number;
@@ -20,7 +21,7 @@ const ManageQuantity = ({
         disabled={quantity <= 1}
         aria-label="Decrease quantity"
       >
-        -
+        -{/* <MinusIcon className="text-black" /> */}
       </button>
 
       {/* Quantity Display */}
