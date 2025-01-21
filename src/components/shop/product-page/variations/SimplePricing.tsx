@@ -30,7 +30,7 @@ const SimplePricing = ({
 
   return (
     <div className="mt-10">
-      <p className="text-sm text-gray-600">This product has no variations.</p>
+      {/* <p className="text-sm text-gray-600">This product has no variations.</p> */}
     </div>
   );
 };

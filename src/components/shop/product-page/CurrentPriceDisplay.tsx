@@ -6,6 +6,8 @@ interface Props {
 }
 
 const CurrentPriceDisplay = ({ basePrice, quantity }: Props) => {
+  // console.log("basePrice [CurrentPriceDisplay]: ", basePrice);
+
   const totalPrice = basePrice ? basePrice * quantity : 0;
 
   return (
