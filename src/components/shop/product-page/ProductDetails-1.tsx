@@ -122,14 +122,11 @@ const ProductDetails = ({ product }: Props) => {
   };
 
   return (
-    // <div className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-8">
-    <div className="lg:grid lg:grid-cols-[60%_40%] lg:items-start lg:gap-x-8">
+    <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
       {/* Image gallery */}
-      <div className="">
-        <ProductImageGallery product={product} />
-      </div>
+      <ProductImageGallery product={product} />
+
       {/* Product info */}
-      {/* <div className="lg:col-span-1 mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0"> */}
       <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
         <ProductInfo product={product} />
         {/* Render the appropriate pricing module */}
@@ -168,7 +165,6 @@ const ProductDetails = ({ product }: Props) => {
         {/* Additional Details w/ Accordion */}
         <AdditionalDetailsAccordion product={product} />
       </div>
-      {/* </div> */}
     </div>
   );
 };

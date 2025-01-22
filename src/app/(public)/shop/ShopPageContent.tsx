@@ -12,7 +12,7 @@ const ShopPageContent = async () => {
   // Fetching the first 12 products
   const { products, totalProducts } = await fetchInitialProducts(1, 12);
 
-  // console.log("PRODUCTS: [ShopPageContent]", products);
+  console.log("PRODUCTS: [ShopPageContent]", products);
   // console.log("TOTAL: [ShopPageContent]", totalProducts);
 
   // Calculate total pages based on total products

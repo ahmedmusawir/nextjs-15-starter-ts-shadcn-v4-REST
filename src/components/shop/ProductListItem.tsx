@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCartStore } from "@/store/useCartStore";
 import { Product } from "@/types/product";
 import parse from "html-react-parser";
 
@@ -12,12 +11,12 @@ interface Props {
 }
 
 const ProductListItem = ({ product }: Props) => {
-  const featuredImage = product.images[0]?.src || "/placeholder.jpg";
-  const { setIsCartOpen, cartItems } = useCartStore();
+  // console.log("featured img [ProductListItem]:", product.images[1]?.src);
 
-  const isProductInCart = (productId: number) => {
-    return cartItems.some((item) => item.id === productId);
-  };
+  const featuredImage =
+    product.images[0].id === "youtube_video"
+      ? product.images[1]?.src || "/placeholder.jpg"
+      : product.images[0].src || "/placeholder.jpg";
 
   return (
     <div key={product.id} className="group relative my-5">

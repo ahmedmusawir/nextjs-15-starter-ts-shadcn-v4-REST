@@ -34,29 +34,34 @@ const ProductImageGallery = ({ product }: Props) => {
                 {image.id === "youtube_video" ? (
                   <div className="relative w-full h-full aspect-video overflow-hidden">
                     <iframe
-                      src={`https://www.youtube.com/embed/${image.vid_id}?autoplay=1&mute=1&loop=1&playlist=${image.vid_id}&controls=0&modestbranding=1&start=30&end=120`}
+                      // src={`https://www.youtube.com/embed/${image.vid_id}?autoplay=1&mute=1&loop=1&playlist=${image.vid_id}`}
+                      src={`https://www.youtube.com/embed/${image.vid_id}?autoplay=1&mute=1&loop=1&playlist=${image.vid_id}&controls=0&modestbranding=1`}
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                       title="YouTube Video"
-                      className="absolute top-0 left-0 w-full h-full"
-                      style={{
-                        transform: "scale(1.9)", // Zoom the iframe
-                        transformOrigin: "center center", // Keep it centered
-                      }}
+                      className="absolute top-0 left-0 w-full h-full object-cover"
                     />
                   </div>
                 ) : (
-                  <div className="relative w-[500px] h-[500px] overflow-hidden aspect-square">
-                    <Image
-                      alt=""
-                      src={image.src || "/placeholder.png"}
-                      className="absolute top-0 left-0 w-full h-full object-cover"
-                      quality={80}
-                      width={500}
-                      height={500}
-                    />
-                  </div>
+                  // <div className="relative w-full h-full aspect-video">
+                  //   <iframe
+                  //     src={`https://www.youtube.com/embed/${image.vid_id}?autoplay=1&mute=1&loop=1&playlist=${image.vid_id}`}
+                  //     // frameBorder="0"
+                  //     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  //     allowFullScreen
+                  //     title="YouTube Video"
+                  //     className="absolute inset-0 w-full h-full"
+                  //   />
+                  // </div>
+                  <Image
+                    alt=""
+                    src={image.src || "/placeholder.png"}
+                    className="object-cover"
+                    quality={80}
+                    width={500}
+                    height={500}
+                  />
                 )}
               </div>
             ))}

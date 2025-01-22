@@ -32,31 +32,18 @@ const ProductImageGallery = ({ product }: Props) => {
               >
                 {/* Handle YouTube video differently */}
                 {image.id === "youtube_video" ? (
-                  <div className="relative w-full h-full aspect-video overflow-hidden">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${image.vid_id}?autoplay=1&mute=1&loop=1&playlist=${image.vid_id}&controls=0&modestbranding=1&start=30&end=120`}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title="YouTube Video"
-                      className="absolute top-0 left-0 w-full h-full"
-                      style={{
-                        transform: "scale(1.9)", // Zoom the iframe
-                        transformOrigin: "center center", // Keep it centered
-                      }}
-                    />
+                  <div className="flex items-center justify-center bg-gray-200 text-gray-500 w-full h-full">
+                    <span>Video Placeholder</span>
                   </div>
                 ) : (
-                  <div className="relative w-[500px] h-[500px] overflow-hidden aspect-square">
-                    <Image
-                      alt=""
-                      src={image.src || "/placeholder.png"}
-                      className="absolute top-0 left-0 w-full h-full object-cover"
-                      quality={80}
-                      width={500}
-                      height={500}
-                    />
-                  </div>
+                  <Image
+                    alt=""
+                    src={image.src || "/placeholder.png"}
+                    className="object-cover"
+                    quality={80}
+                    width={500}
+                    height={500}
+                  />
                 )}
               </div>
             ))}

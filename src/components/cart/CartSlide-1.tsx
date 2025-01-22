@@ -9,7 +9,6 @@ import {
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
-import Image from "next/image";
 import Link from "next/link";
 import CartImage from "./CartImage";
 
@@ -19,19 +18,29 @@ const CartSlide = () => {
   // Access Zustand store
   const {
     cartItems,
-    calculateSubtotal,
+    subtotal,
     removeCartItem,
     setIsCartOpen,
     isCartOpen,
-    setCartItems,
+    increaseCartQuantity,
+    decreaseCartQuantity,
   } = useCartStore();
 
   // Handle quantity changes
-  const handleQuantityChange = (itemId: number, newQuantity: number) => {
-    const updatedCartItems = cartItems.map((item) =>
-      item.id === itemId ? { ...item, quantity: newQuantity } : item
-    );
-    setCartItems(updatedCartItems); // Update Zustand store
+  const handleQuantityChange = (
+    itemId: number,
+    action: "increase" | "decrease"
+  ) => {
+    if (action === "increase") {
+      increaseCartQuantity(itemId); // Increase the quantity of the item
+    } else if (action === "decrease") {
+      const item = cartItems.find((item) => item.id === itemId);
+      if (item?.quantity === 1) {
+        removeCartItem(itemId); // Remove item if quantity is 1
+      } else {
+        decreaseCartQuantity(itemId); // Decrease the quantity of the item
+      }
+    }
   };
 
   // Redirect to shop if cart is empty after removal
@@ -103,35 +112,42 @@ const CartSlide = () => {
                                   <p className="ml-4">{cartItem.price}</p>
                                 </div>
                                 <p className="mt-1 text-sm text-gray-500">
-                                  {/* {cartItem.category} */}
+                                  {cartItem.categories.map((c) => c.name)}
                                 </p>
                               </div>
                               <div className="flex flex-1 items-end justify-between text-sm">
+                                {/* Quantity Manage Block + & - */}
                                 <div className="flex items-center">
-                                  <label
-                                    htmlFor={`quantity-${cartItem.id}`}
-                                    className="text-gray-500 mr-2 font-bold"
-                                  >
-                                    Qty
-                                  </label>
-                                  <select
-                                    id={`quantity-${cartItem.id}`}
-                                    name={`quantity-${cartItem.id}`}
-                                    value={cartItem.quantity}
-                                    onChange={(e) =>
+                                  <button
+                                    type="button"
+                                    className="px-2 py-1 text-gray-700 border rounded-md"
+                                    onClick={() =>
                                       handleQuantityChange(
                                         cartItem.id,
-                                        parseInt(e.target.value, 10)
+                                        "decrease"
                                       )
                                     }
-                                    className="block max-w-full rounded-md border border-gray-300 py-1.5 px-3 text-base font-medium text-gray-700 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                                   >
-                                    {[...Array(10).keys()].map((i) => (
-                                      <option key={i} value={i + 1}>
-                                        {i + 1}
-                                      </option>
-                                    ))}
-                                  </select>
+                                    -
+                                  </button>
+                                  <input
+                                    type="text"
+                                    value={cartItem.quantity}
+                                    readOnly
+                                    className="mx-2 w-10 text-center border rounded-md"
+                                  />
+                                  <button
+                                    type="button"
+                                    className="px-2 py-1 text-gray-700 border rounded-md"
+                                    onClick={() =>
+                                      handleQuantityChange(
+                                        cartItem.id,
+                                        "increase"
+                                      )
+                                    }
+                                  >
+                                    +
+                                  </button>
                                 </div>
                                 <button
                                   type="button"
@@ -154,7 +170,7 @@ const CartSlide = () => {
                 <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                   <div className="flex justify-between text-base font-medium text-gray-900">
                     <p>Subtotal</p>
-                    <p>${calculateSubtotal()}</p>
+                    <p>${subtotal()}</p>
                   </div>
                   <div className="mt-6">
                     <Link

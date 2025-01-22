@@ -30,10 +30,12 @@ export interface Product {
   sku: string;
   categories: ProductCategory[];
   images: Array<{
-    id: number;
+    id: number | string;
     src: string;
     name: string;
     alt: string;
+    vid_id: string;
+    type: string;
   }>;
   attributes: Array<{
     id: number;

@@ -50,7 +50,7 @@ const SingleProductPage = async ({
     related_products: await fetchRelatedProductsById(singleProduct.related_ids),
   };
 
-  console.log("varions [SingleProduct Page]", productWithVariations.variations);
+  // console.log("varions [SingleProduct Page]", productWithVariations.variations);
 
   const relatedProducts = productWithVariations.related_products;
 
@@ -69,7 +69,7 @@ const SingleProductPage = async ({
     ...customCategory,
     ...(poleStyles && { poleStyles }),
   };
-  console.log("augmentedCategory [SingleProduct page]", augmentedCategory);
+  // console.log("augmentedCategory [SingleProduct page]", augmentedCategory);
 
   return (
     <div>

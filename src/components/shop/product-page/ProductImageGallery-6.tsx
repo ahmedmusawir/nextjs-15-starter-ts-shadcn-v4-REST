@@ -47,16 +47,14 @@ const ProductImageGallery = ({ product }: Props) => {
                     />
                   </div>
                 ) : (
-                  <div className="relative w-[500px] h-[500px] overflow-hidden aspect-square">
-                    <Image
-                      alt=""
-                      src={image.src || "/placeholder.png"}
-                      className="absolute top-0 left-0 w-full h-full object-cover"
-                      quality={80}
-                      width={500}
-                      height={500}
-                    />
-                  </div>
+                  <Image
+                    alt=""
+                    src={image.src || "/placeholder.png"}
+                    className="object-cover"
+                    quality={80}
+                    width={500}
+                    height={500}
+                  />
                 )}
               </div>
             ))}

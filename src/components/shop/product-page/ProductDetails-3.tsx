@@ -122,53 +122,52 @@ const ProductDetails = ({ product }: Props) => {
   };
 
   return (
-    // <div className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-8">
-    <div className="lg:grid lg:grid-cols-[60%_40%] lg:items-start lg:gap-x-8">
+    <div className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-8">
       {/* Image gallery */}
-      <div className="">
+      <div className="lg:col-span-2">
         <ProductImageGallery product={product} />
       </div>
       {/* Product info */}
-      {/* <div className="lg:col-span-1 mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0"> */}
-      <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
-        <ProductInfo product={product} />
-        {/* Render the appropriate pricing module */}
-        {renderPricingModule(
-          productCategory,
-          setBasePrice,
-          cartItem,
-          setCartItem,
-          {
-            SimplePricing,
-            SingleVariationPricing,
-            ComplexVariationPricing,
-            BloxxPricing,
-          }
-        )}
+      <div className="lg:col-span-1 mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
+        <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
+          <ProductInfo product={product} />
+          {/* Render the appropriate pricing module */}
+          {renderPricingModule(
+            productCategory,
+            setBasePrice,
+            cartItem,
+            setCartItem,
+            {
+              SimplePricing,
+              SingleVariationPricing,
+              ComplexVariationPricing,
+              BloxxPricing,
+            }
+          )}
 
-        {/* Current Price Display */}
-        <CurrentPriceDisplay basePrice={basePrice} quantity={quantity} />
+          {/* Current Price Display */}
+          <CurrentPriceDisplay basePrice={basePrice} quantity={quantity} />
 
-        {/* The Quantity & Add to Cart button block */}
-        <div className="flex items-center space-x-8 my-10">
-          {/* Quantity Selector */}
-          <ManageQuantity
-            quantity={quantity}
-            onIncrement={handleIncrement}
-            onDecrement={handleDecrement}
-          />
+          {/* The Quantity & Add to Cart button block */}
+          <div className="flex items-center space-x-8 my-10">
+            {/* Quantity Selector */}
+            <ManageQuantity
+              quantity={quantity}
+              onIncrement={handleIncrement}
+              onDecrement={handleDecrement}
+            />
 
-          {/* Add to Cart Button */}
-          <AddToCartButton
-            cartItem={cartItem}
-            handleAddToCart={handleAddToCart}
-          />
+            {/* Add to Cart Button */}
+            <AddToCartButton
+              cartItem={cartItem}
+              handleAddToCart={handleAddToCart}
+            />
+          </div>
+
+          {/* Additional Details w/ Accordion */}
+          <AdditionalDetailsAccordion product={product} />
         </div>
-
-        {/* Additional Details w/ Accordion */}
-        <AdditionalDetailsAccordion product={product} />
       </div>
-      {/* </div> */}
     </div>
   );
 };
