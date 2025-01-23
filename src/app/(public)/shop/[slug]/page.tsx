@@ -55,6 +55,7 @@ const SingleProductPage = async ({
   const relatedProducts = productWithVariations.related_products;
 
   console.log("singleProduct [SingleProduct page]", singleProduct);
+  console.log("relatedProduct [SingleProduct page]", relatedProducts);
 
   // Detect the product category
   const customCategory = detectProductCategory(productWithVariations);

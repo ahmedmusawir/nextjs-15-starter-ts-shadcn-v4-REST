@@ -12,6 +12,8 @@ interface Props {
 const CartImage = ({ cartItem, imgHeight, imgWidth }: Props) => {
   const [isImgLoading, setIsImgLoading] = useState(true);
 
+  // console.log("img url [CartImage.tsx]", cartItem.image);
+
   return (
     <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
       {isImgLoading && (

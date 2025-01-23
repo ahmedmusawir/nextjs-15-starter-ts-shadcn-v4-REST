@@ -35,7 +35,7 @@ const ProductDetails = ({ product }: Props) => {
     name: product.name,
     price: 0, // Default price
     quantity: 1, // Default quantity
-    image: product.images[0].src, // Main product image
+    image: product.images[1].src, // Main product image
     categories: product.categories,
     basePrice: 0, // Default base price
     variations: [],
@@ -118,7 +118,7 @@ const ProductDetails = ({ product }: Props) => {
     setIsCartOpen(true); // Open the side cart
 
     // If validation passes, proceed
-    console.log("Generated Cart Item:", cartItem);
+    console.log("Generated Cart Item: [ProductDetails.tsx]", cartItem);
   };
 
   return (

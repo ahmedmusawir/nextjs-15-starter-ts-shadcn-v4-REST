@@ -7,15 +7,10 @@ import { CartItem } from "@/types/cart";
 
 interface BloxxPricingProps {
   onPriceChange: (price: number | null) => void;
-  cartItem: CartItem; // New prop
   setCartItem: React.Dispatch<React.SetStateAction<CartItem>>; // New prop
 }
 
-const BloxxPricing = ({
-  onPriceChange,
-  cartItem,
-  setCartItem,
-}: BloxxPricingProps) => {
+const BloxxPricing = ({ onPriceChange, setCartItem }: BloxxPricingProps) => {
   const [variations, setVariations] = useState<ProductVariation[]>([]);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -155,67 +150,6 @@ const BloxxPricing = ({
       }
     }
   }, [variations]);
-
-  // THE NEW ONE Initialize default selections for pole shape, style, size, and update the cart item.
-  // useEffect(() => {
-  //   if (variations.length > 0) {
-  //     const validShapes = getValidShapes();
-
-  //     if (validShapes.length > 0) {
-  //       const defaultShape = validShapes[0];
-  //       setSelectedShape(defaultShape);
-  //       filterOptionsByShape(defaultShape);
-
-  //       // Determine default style based on shape
-  //       let defaultStyle: string | null = null;
-  //       switch (defaultShape.toLowerCase()) {
-  //         case "square":
-  //           defaultStyle = "square";
-  //           break;
-  //         case "round":
-  //           defaultStyle = "round";
-  //           break;
-  //         case "octagon":
-  //           defaultStyle = "round_octagon";
-  //           break;
-  //         default:
-  //           defaultStyle = null;
-  //       }
-  //       setSelectedPoleStyle(defaultStyle);
-
-  //       // Determine default size
-  //       const defaultSize = variations
-  //         .find(
-  //           (variation) =>
-  //             variation.attributes.find(
-  //               (attr) =>
-  //                 attr.name === "Pole Shape" && attr.option === defaultShape
-  //             ) !== undefined
-  //         )
-  //         ?.attributes.find((attr) => attr.name === "Pole Size")?.option;
-  //       setSelectedSize(defaultSize || "Unknown");
-
-  //       // Determine default version (safe fallback for missing versions)
-  //       const defaultVersion =
-  //         filteredVersions.length > 0 ? filteredVersions[0] : "Unknown";
-  //       setSelectedVersion(defaultVersion);
-
-  //       // Update cart item with all defaults
-  //       setCartItem((prev) => ({
-  //         ...prev,
-  //         variations: [
-  //           { name: "Pole Shape", value: defaultShape },
-  //           { name: "Pole Style", value: defaultStyle || "Unknown" },
-  //           { name: "Pole Size", value: defaultSize || "Unknown" },
-  //           { name: "Version", value: defaultVersion },
-  //         ],
-  //       }));
-
-  //       // Trigger price calculation after updating defaults
-  //       calculatePrice();
-  //     }
-  //   }
-  // }, [variations]);
 
   // Initialize default selections on mount
   useEffect(() => {
@@ -525,7 +459,6 @@ const BloxxPricing = ({
       </div>
 
       {/* Version Options */}
-      {/* Version Options */}
       {filteredVersions.length > 0 ? (
         <div className="mb-4">
           <h3 className="text-sm text-gray-600">Version</h3>
@@ -551,32 +484,6 @@ const BloxxPricing = ({
           {/* <p className="text-gray-500">No Version Available</p> */}
         </div>
       )}
-
-      {/* {filteredVersions.length > 0 ? (
-        <div className="mb-4">
-          <h3 className="text-sm text-gray-600">Version</h3>
-          <div className="flex gap-3 mt-2">
-            {filteredVersions.map((version) => (
-              <button
-                key={version}
-                onClick={() => setSelectedVersion(version)}
-                className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm ${
-                  selectedVersion === version
-                    ? "bg-indigo-500 text-white"
-                    : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-100"
-                }`}
-              >
-                {version}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="mb-4">
-          <h3 className="text-sm text-gray-600">Version</h3>
-          <p className="text-gray-500">No Version Available</p>
-        </div>
-      )} */}
 
       {/* Pole Size Options */}
       <div className="mb-4">
@@ -613,7 +520,6 @@ const BloxxPricing = ({
 
       {/* Pole Shape Styles */}
       <div>
-        {/* Pole Shape Styles */}
         <BloxxPricingPoleStyles
           onSelectionChange={handlePoleStyleChange}
           setSelectedPoleStyle={setSelectedPoleStyle}

@@ -390,7 +390,7 @@ export const fetchRelatedProductsById = async (
           name: product.name,
           slug: product.slug,
           price_html: product.price_html,
-          image: product.images?.[0]?.src || "", // Use the first image as the featured image
+          image: product.images?.[1]?.src || "", // Use the first image as the featured image
         };
       })
     );
