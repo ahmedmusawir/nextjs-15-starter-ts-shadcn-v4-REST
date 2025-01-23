@@ -19,6 +19,7 @@ interface CartStore {
   increaseCartQuantity: (itemId: number) => void; // Add item to cart by ID
   decreaseCartQuantity: (itemId: number) => void; // Decrement the quantity of a specific item
   subtotal: () => number; // Calculate the subtotal of all items in the cart
+  getItemQuantity: (itemId: number) => number; // Get the quantity of a specific item
 }
 
 // Define the Zustand store with persist middleware
@@ -38,6 +39,9 @@ export const useCartStore = create<CartStore>()(
           cartItems:
             typeof updater === "function" ? updater(state.cartItems) : updater,
         })),
+
+      getItemQuantity: (itemId) =>
+        get().cartItems.find((item) => item.id === itemId)?.quantity || 0,
 
       addOrUpdateCartItem: (newItem) => {
         set((state) => {
