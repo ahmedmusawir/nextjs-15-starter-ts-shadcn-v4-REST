@@ -385,12 +385,16 @@ export const fetchRelatedProductsById = async (
         const product = await response.json();
 
         // Format the data to return only necessary fields
+        // Since some product images gallery has a video instead of an image as the first item
         return {
           id: product.id,
           name: product.name,
           slug: product.slug,
           price_html: product.price_html,
-          image: product.images?.[1]?.src || "", // Use the first image as the featured image
+          image:
+            product.images[0].type === "video"
+              ? product.images[1].src
+              : product.images[0].src || "", // Use the first image as the featured image
         };
       })
     );

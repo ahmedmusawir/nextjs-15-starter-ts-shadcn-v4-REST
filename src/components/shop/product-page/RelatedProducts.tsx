@@ -20,6 +20,7 @@ const RelatedProducts = ({ relatedProducts }: Props) => {
         {relatedProducts.map((product) => (
           <div key={product.id}>
             <div className="relative">
+              {/* <h5>{product.image}</h5> */}
               <div className="relative h-72 w-full overflow-hidden rounded-lg">
                 <Image
                   alt={product.name}

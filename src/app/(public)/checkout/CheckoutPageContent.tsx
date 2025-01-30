@@ -68,10 +68,10 @@ const CheckoutPageContent = () => {
     removeCartItem(id);
 
     if (cartItems.length === 0) {
+      router.push("/shop");
       const { resetPagination } = useNumberedPaginationStore.getState();
       const totalProducts = useProductStore.getState().products.length; // Dynamically get total product count
       resetPagination([], totalProducts); // Reset pagination with dynamic total
-      router.push("/shop");
     }
   };
 

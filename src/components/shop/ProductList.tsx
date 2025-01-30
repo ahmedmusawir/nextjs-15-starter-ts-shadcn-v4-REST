@@ -6,6 +6,7 @@ import { useNumberedPaginationStore } from "@/store/useNumberedPaginationStore";
 import { Product } from "@/types/product";
 import Spinner from "../common/Spinner";
 import SpinnerLarge from "../common/SpinnerLarge";
+import { useCartStore } from "@/store/useCartStore";
 
 interface ProductListProps {
   initialProducts: Product[]; // Server-side rendered initial products
@@ -21,6 +22,9 @@ const ProductList = ({ initialProducts, totalProducts }: ProductListProps) => {
     setTotalProducts,
     loading,
   } = useNumberedPaginationStore();
+
+  const { cartItems } = useCartStore();
+  console.log("Cart Items from Zustand [ProductList.tsx]", cartItems);
 
   // Hydrate Zustand store with initial SSR data for page 1
   useEffect(() => {

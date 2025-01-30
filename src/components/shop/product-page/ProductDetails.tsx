@@ -35,7 +35,10 @@ const ProductDetails = ({ product }: Props) => {
     name: product.name,
     price: 0, // Default price
     quantity: 1, // Default quantity
-    image: product.images[1].src, // Main product image
+    image:
+      product.images[0].type === "video"
+        ? product.images[1].src
+        : product.images[0].src, // some galleries have video
     categories: product.categories,
     basePrice: 0, // Default base price
     variations: [],

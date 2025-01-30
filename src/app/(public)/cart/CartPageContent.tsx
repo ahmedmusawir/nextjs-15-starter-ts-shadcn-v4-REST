@@ -77,6 +77,8 @@ const CartPageContent = () => {
     setIsCartOpen,
     isLoading,
     setCartItems,
+    increaseCartQuantity,
+    decreaseCartQuantity,
   } = useCartStore();
 
   // Closes the sidebar Cart Slide
@@ -106,11 +108,13 @@ const CartPageContent = () => {
     removeCartItem(id);
 
     if (cartItems.length === 0) {
+      console.log("Cart Items [CartPageContent.tsx]:", cartItems);
+      router.push("/shop");
       const { resetPagination } = useNumberedPaginationStore.getState();
       const totalProducts = useProductStore.getState().products.length; // Dynamically get total product count
       resetPagination([], totalProducts); // Reset pagination with dynamic total
-      router.push("/shop");
     }
+    console.log("Cart Items [CartPageContent.tsx]:", cartItems);
   };
 
   // Go back to shop link
@@ -208,6 +212,7 @@ const CartPageContent = () => {
                                 </option>
                               ))}
                             </select>
+
                             <ChevronDownIcon
                               aria-hidden="true"
                               className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
