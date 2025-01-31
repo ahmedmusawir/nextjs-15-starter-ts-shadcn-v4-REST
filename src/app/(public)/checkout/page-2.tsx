@@ -1,6 +1,5 @@
 import CheckoutPageContent from "./CheckoutPageContent";
 import {
-  fetchAllCoupons,
   fetchShippingMethodsByZone,
   fetchShippingOptions,
   fetchShippingZones,
@@ -15,32 +14,43 @@ import {
 const Checkout = async () => {
   // console.log("🚀 Fetching Shipping Options...");
 
-  const shippingData = await fetchShippingOptions();
+  const shippingOptions = await fetchShippingOptions();
 
-  console.log("✅ Shipping Options Fetched:[/checkout/page.tsx]", shippingData);
+  console.log(
+    "✅ Shipping Options Fetched:[/checkout/page.tsx]",
+    shippingOptions
+  );
 
-  const couponData = await fetchAllCoupons();
-  console.log("✅ Coupons Fetched:", couponData);
+  const shippingZones = await fetchShippingZones();
+
+  console.log("✅ Shipping Zones Fetched:[/checkout/page.tsx]", shippingZones);
+
+  const shippingMethodsByZone = await fetchShippingMethodsByZone(1);
+
+  console.log(
+    "✅ Shipping Methods by Zone ID Fetched:[/checkout/page.tsx]",
+    shippingMethodsByZone
+  );
 
   return (
     <div>
       {/* Embed Shipping Data */}
-      <script
+      {/* <script
         id="shipping-data"
         type="application/json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(shippingData),
         }}
-      />
+      /> */}
 
       {/* Embed Coupon Data */}
-      <script
+      {/* <script
         id="coupon-data"
         type="application/json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(couponData),
         }}
-      />
+      /> */}
 
       <h1>The Checkout Page ISR Testing...</h1>
       {/* <pre>{JSON.stringify(shippingOptions, null, 2)}</pre> */}
