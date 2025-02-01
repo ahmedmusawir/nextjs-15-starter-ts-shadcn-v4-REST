@@ -1,9 +1,7 @@
 import CheckoutPageContent from "./CheckoutPageContent";
 import {
   fetchAllCoupons,
-  fetchShippingMethodsByZone,
   fetchShippingOptions,
-  fetchShippingZones,
 } from "@/services/checkoutServices";
 
 /**
@@ -13,14 +11,14 @@ import {
  * - Embeds JSON object into the page for debugging.
  */
 const Checkout = async () => {
-  // console.log("🚀 Fetching Shipping Options...");
+  // console.log("Fetching Shipping Options...");
 
   const shippingData = await fetchShippingOptions();
 
-  console.log("✅ Shipping Options Fetched:[/checkout/page.tsx]", shippingData);
+  console.log("Shipping Options Fetched:[/checkout/page.tsx]", shippingData);
 
   const couponData = await fetchAllCoupons();
-  console.log("✅ Coupons Fetched:", couponData);
+  console.log("Coupons Fetched:", couponData);
 
   return (
     <div>
