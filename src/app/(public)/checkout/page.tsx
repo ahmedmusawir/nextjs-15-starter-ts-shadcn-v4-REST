@@ -42,10 +42,8 @@ const Checkout = async () => {
         }}
       />
 
-      <h1>The Checkout Page ISR Testing...</h1>
-      {/* <pre>{JSON.stringify(shippingOptions, null, 2)}</pre> */}
-      {/* Commented out until the UI is ready */}
-      {/* <CheckoutPageContent /> */}
+      {/* Main Checkout Page Content */}
+      <CheckoutPageContent />
     </div>
   );
 };

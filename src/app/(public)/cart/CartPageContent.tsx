@@ -278,7 +278,7 @@ const CartPageContent = () => {
                     ${subtotal()}
                   </dd>
                 </div>
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+                {/* <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <dt className="flex items-center text-sm text-gray-600">
                     <span>Shipping estimate</span>
                     <a
@@ -313,13 +313,13 @@ const CartPageContent = () => {
                     </a>
                   </dt>
                   <dd className="text-sm font-medium text-gray-900">$8.32</dd>
-                </div>
+                </div> */}
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <dt className="text-base font-medium text-gray-900">
                     Order total
                   </dt>
                   <dd className="text-base font-medium text-gray-900">
-                    ${(subtotal() + 5.0 + 8.32).toFixed(2)}
+                    ${subtotal().toFixed(2)}
                   </dd>
                 </div>
               </dl>
