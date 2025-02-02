@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { debounce } from "lodash";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
-import ShippingMethods from "./ShippingMethods";
 
 // Function to retrieve shipping data from the embedded script
 const getShippingData = () => {
@@ -17,90 +16,50 @@ const ShippingInfo = () => {
   // Local state for controlled inputs
   const [shipping, setLocalShipping] = useState(checkoutData.shipping);
   const [availableMethods, setAvailableMethods] = useState<string[]>([]);
-  const [selectedMethod, setSelectedMethod] = useState<
-    "flat_rate" | "free_shipping" | "local_pickup"
-  >(checkoutData.shippingMethod);
-  const [shippingData, setShippingData] = useState<{
-    local_pickup_zipcodes: string[];
-    flat_rates: { subtotal_threshold: number; shipping_cost: number }[];
-    is_free_shipping_for_local_pickup: boolean;
-  } | null>(null);
-
-  const [subtotal, setSubtotal] = useState<number>(checkoutData.subtotal);
+  const [selectedMethod, setSelectedMethod] = useState(
+    checkoutData.shippingMethod
+  );
 
   useEffect(() => {
-    const data = getShippingData();
-    if (!data) return;
+    const shippingData = getShippingData();
+    if (!shippingData) return;
 
-    setShippingData(data);
-    setSubtotal(checkoutData.subtotal);
+    const {
+      local_pickup_zipcodes,
+      flat_rates,
+      is_free_shipping_for_local_pickup,
+    } = shippingData as {
+      local_pickup_zipcodes: string[];
+      flat_rates: { subtotal_threshold: number; shipping_cost: number }[];
+      is_free_shipping_for_local_pickup: boolean;
+    };
 
-    console.log("Shipping Data:[ShippingInfo.tsx]", data);
+    let methods = [];
 
-    const { local_pickup_zipcodes, flat_rates, is_free_shipping_for_local } =
-      data;
+    if (
+      shipping.postcode &&
+      local_pickup_zipcodes.includes(shipping.postcode)
+    ) {
+      methods.push("Local Pickup");
 
-    let methods: string[] = [];
-
-    // Validate ZIP Code: Ensure it's a 5-digit number before proceeding
-    const isValidZip = /^\d{5}$/.test(shipping.postcode);
-
-    if (!isValidZip) {
-      setAvailableMethods([]); // Clear available methods
-      return;
-    }
-
-    // If the entered zip code is in the list
-    if (local_pickup_zipcodes.includes(shipping.postcode)) {
-      // When free shipping is enabled, only show Free Shipping & Local Pickup
-      if (is_free_shipping_for_local) {
+      if (is_free_shipping_for_local_pickup) {
         methods.push("Free Shipping");
-        methods.push("Local Pickup");
-      } else {
-        // Otherwise, only allow Local Pickup
-        methods.push("Local Pickup");
       }
-    } else {
-      // Zip code not listed: determine applicable flat rate based on subtotal
-      const applicableRates = flat_rates.filter(
-        (rate: { subtotal_threshold: number; shipping_cost: number }) =>
-          subtotal >= rate.subtotal_threshold
+    } else if (shipping.postcode) {
+      const subtotal = checkoutData.subtotal;
+      const applicableRate = flat_rates.find(
+        (rate) => subtotal >= rate.subtotal_threshold
       );
 
-      let applicableRate;
-      if (applicableRates.length > 0) {
-        // Choose the rate with the highest threshold met
-        const applicableRate = applicableRates.reduce(
-          (
-            prev: { subtotal_threshold: number; shipping_cost: number },
-            curr: { subtotal_threshold: number; shipping_cost: number }
-          ) => (curr.subtotal_threshold > prev.subtotal_threshold ? curr : prev)
-        );
-      } else if (flat_rates.length > 0) {
-        // Fallback: use the first rate if no threshold is met
-        applicableRate = flat_rates[0];
+      if (applicableRate) {
+        methods.push(`Flat Rate - $${applicableRate.shipping_cost}`);
       }
-
-      methods.push(`Flat Rate - $${applicableRate?.shipping_cost}`);
     }
 
     setAvailableMethods(methods);
-
-    // Set default selection based on the available methods
-    if (methods.includes("Free Shipping")) {
-      setSelectedMethod("free_shipping");
-      setShippingMethod("free_shipping", 0);
-    } else if (methods.includes("Local Pickup")) {
-      setSelectedMethod("local_pickup");
-      setShippingMethod("local_pickup", 0);
-    } else if (methods.some((m) => m.includes("Flat Rate"))) {
-      const flatRateStr = methods.find((m) => m.includes("Flat Rate")) || "";
-      const cost = Number(flatRateStr.split("$")[1]) || 0;
-      setSelectedMethod("flat_rate");
-      setShippingMethod("flat_rate", cost);
-    }
   }, [shipping.postcode, checkoutData.subtotal]);
 
+  // Debounce function to delay updates to Zustand
   const debouncedUpdate = debounce((updatedShipping) => {
     setShipping(updatedShipping);
   }, 300);
@@ -110,6 +69,36 @@ const ShippingInfo = () => {
     debouncedUpdate(shipping);
     return () => debouncedUpdate.cancel();
   }, [shipping]);
+
+  // Handle method selection
+  // Define allowed shipping methods explicitly
+  type ShippingMethod = "flat_rate" | "free_shipping" | "local_pickup";
+
+  const handleMethodSelect = (method: string) => {
+    // setSelectedMethod(method);
+
+    if (["flat_rate", "free_shipping", "local_pickup"].includes(method)) {
+      setSelectedMethod(
+        method as "flat_rate" | "free_shipping" | "local_pickup"
+      );
+    } else {
+      console.error("Invalid shipping method selected:", method);
+    }
+
+    let shippingMethod: ShippingMethod = "flat_rate";
+    let shippingCost = 0;
+
+    if (method.includes("Flat Rate")) {
+      shippingMethod = "flat_rate";
+      shippingCost = Number(method.split("$")[1]) || 0;
+    } else if (method === "Free Shipping") {
+      shippingMethod = "free_shipping";
+    } else if (method === "Local Pickup") {
+      shippingMethod = "local_pickup";
+    }
+
+    setShippingMethod(shippingMethod, shippingCost);
+  };
 
   return (
     <div className="mt-4">
@@ -210,14 +199,31 @@ const ShippingInfo = () => {
       </div>
 
       {/* Shipping Method Selection Box */}
-
-      {shippingData && (
-        <ShippingMethods
-          availableMethods={availableMethods}
-          shippingData={shippingData}
-          subtotal={subtotal}
-        />
-      )}
+      <div className="mt-6 border border-gray-300 rounded-md p-4 bg-white">
+        <h3 className="text-md font-semibold text-gray-900">Shipping Method</h3>
+        {availableMethods.length > 0 ? (
+          <div className="mt-4 space-y-2">
+            {availableMethods.map((method) => (
+              <button
+                key={method}
+                className={`block w-full px-4 py-2 text-left text-sm font-medium rounded-md ${
+                  selectedMethod === method
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 hover:bg-gray-200"
+                }`}
+                onClick={() => handleMethodSelect(method)}
+              >
+                {method}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 mt-2">
+            Please enter your shipping address to see available shipping
+            options.
+          </p>
+        )}
+      </div>
     </div>
   );
 };

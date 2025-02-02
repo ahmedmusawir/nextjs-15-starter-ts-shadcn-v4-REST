@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
   try {
     // Build the WooCommerce REST API URL
-    const url = `${WOOCOM_REST_API_URL}products?per_page=${perPage}&page=${page}&consumer_key=${WOOCOM_CONSUMER_KEY}&consumer_secret=${WOOCOM_CONSUMER_SECRET}&orderby=date&order=asc&status=publish`;
+    const url = `${WOOCOM_REST_API_URL}/products?per_page=${perPage}&page=${page}&consumer_key=${WOOCOM_CONSUMER_KEY}&consumer_secret=${WOOCOM_CONSUMER_SECRET}&orderby=date&order=asc&status=publish`;
 
     console.log("[API Route] Final WooCommerce API URL:", url);
 

@@ -37,67 +37,52 @@ const ShippingInfo = () => {
 
     console.log("Shipping Data:[ShippingInfo.tsx]", data);
 
-    const { local_pickup_zipcodes, flat_rates, is_free_shipping_for_local } =
-      data;
+    const {
+      local_pickup_zipcodes,
+      flat_rates,
+      is_free_shipping_for_local_pickup,
+    } = data;
 
-    let methods: string[] = [];
+    let methods = [];
 
     // Validate ZIP Code: Ensure it's a 5-digit number before proceeding
     const isValidZip = /^\d{5}$/.test(shipping.postcode);
 
     if (!isValidZip) {
       setAvailableMethods([]); // Clear available methods
-      return;
+      return; // Stop execution to prevent accidental method selection
     }
 
-    // If the entered zip code is in the list
     if (local_pickup_zipcodes.includes(shipping.postcode)) {
-      // When free shipping is enabled, only show Free Shipping & Local Pickup
-      if (is_free_shipping_for_local) {
+      methods.push("Local Pickup");
+
+      if (is_free_shipping_for_local_pickup) {
         methods.push("Free Shipping");
-        methods.push("Local Pickup");
-      } else {
-        // Otherwise, only allow Local Pickup
-        methods.push("Local Pickup");
       }
     } else {
-      // Zip code not listed: determine applicable flat rate based on subtotal
-      const applicableRates = flat_rates.filter(
+      const applicableRate = flat_rates.find(
         (rate: { subtotal_threshold: number; shipping_cost: number }) =>
           subtotal >= rate.subtotal_threshold
       );
 
-      let applicableRate;
-      if (applicableRates.length > 0) {
-        // Choose the rate with the highest threshold met
-        const applicableRate = applicableRates.reduce(
-          (
-            prev: { subtotal_threshold: number; shipping_cost: number },
-            curr: { subtotal_threshold: number; shipping_cost: number }
-          ) => (curr.subtotal_threshold > prev.subtotal_threshold ? curr : prev)
-        );
-      } else if (flat_rates.length > 0) {
-        // Fallback: use the first rate if no threshold is met
-        applicableRate = flat_rates[0];
+      if (applicableRate) {
+        methods.push(`Flat Rate - $${applicableRate.shipping_cost}`);
       }
-
-      methods.push(`Flat Rate - $${applicableRate?.shipping_cost}`);
     }
 
     setAvailableMethods(methods);
 
-    // Set default selection based on the available methods
-    if (methods.includes("Free Shipping")) {
+    // ✅ Set default method if Free Shipping is available
+    if (is_free_shipping_for_local_pickup) {
       setSelectedMethod("free_shipping");
       setShippingMethod("free_shipping", 0);
     } else if (methods.includes("Local Pickup")) {
       setSelectedMethod("local_pickup");
       setShippingMethod("local_pickup", 0);
     } else if (methods.some((m) => m.includes("Flat Rate"))) {
-      const flatRateStr = methods.find((m) => m.includes("Flat Rate")) || "";
-      const cost = Number(flatRateStr.split("$")[1]) || 0;
+      const flatRate = methods.find((m) => m.includes("Flat Rate"));
       setSelectedMethod("flat_rate");
-      setShippingMethod("flat_rate", cost);
+      setShippingMethod("flat_rate", Number(flatRate?.split("$")[1]) || 0);
     }
   }, [shipping.postcode, checkoutData.subtotal]);
 
