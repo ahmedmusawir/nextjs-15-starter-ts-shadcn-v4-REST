@@ -1,7 +1,10 @@
+type DiscountType = "fixed_cart" | "percent" | "fixed_product";
+
 export interface Coupon {
   id: number;
   code: string;
-  discount_type: "percent" | "fixed_cart" | "fixed_product";
+  discount_type: DiscountType;
+  // discount_type: "percent" | "fixed_cart" | "fixed_product";
   discount_value: number;
   free_shipping: boolean;
   min_spend: string;

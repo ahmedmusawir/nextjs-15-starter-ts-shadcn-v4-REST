@@ -35,7 +35,7 @@ const ShippingInfo = () => {
     setShippingData(data);
     setSubtotal(checkoutData.subtotal);
 
-    console.log("Shipping Data:[ShippingInfo.tsx]", data);
+    // console.log("Shipping Data:[ShippingInfo.tsx]", data);
 
     const { local_pickup_zipcodes, flat_rates, is_free_shipping_for_local } =
       data;

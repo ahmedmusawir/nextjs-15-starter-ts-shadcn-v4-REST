@@ -24,7 +24,6 @@ interface CheckoutStore {
   calculateTotals: () => void;
   resetCheckout: () => void;
   applyCoupon: (code: string) => void;
-  removeCoupon: () => void;
 }
 
 export const useCheckoutStore = create<CheckoutStore>()(
@@ -123,7 +122,7 @@ export const useCheckoutStore = create<CheckoutStore>()(
           };
         }),
 
-      // Apply Coupon Zustand Function
+      // Apply Coupon
       applyCoupon: (code) =>
         set((state) => {
           const { checkoutData } = state;
@@ -147,20 +146,6 @@ export const useCheckoutStore = create<CheckoutStore>()(
 
           return { checkoutData: updatedCheckoutData };
         }),
-
-      // Remove Coupon from Checkout
-      removeCoupon: () =>
-        set((state) => ({
-          checkoutData: {
-            ...state.checkoutData,
-            coupon: null,
-            discountTotal: 0,
-            shippingMethod: "flat_rate", // Reset to default
-            shippingCost: state.checkoutData.shippingCost, // Keep the existing cost
-            total:
-              state.checkoutData.subtotal + state.checkoutData.shippingCost, // Restore original total
-          },
-        })),
 
       // Reset Checkout (After Order is Placed)
       resetCheckout: () =>

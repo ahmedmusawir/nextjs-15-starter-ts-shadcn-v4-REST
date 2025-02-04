@@ -11,21 +11,6 @@ import {
 import ContactEmail from "./ContactEmail";
 import ShippingInfo from "./ShippingInfo";
 
-const deliveryMethods = [
-  {
-    id: 1,
-    title: "Flat Rate",
-    turnaround: "4–10 business days",
-    price: "$10.00",
-  },
-  {
-    id: 2,
-    title: "Local Pickup",
-    turnaround: "123 Our Pickup Point Address",
-    price: "$0.00",
-  },
-];
-
 const paymentMethods = [
   { id: "credit-card", title: "Credit card" },
   { id: "paypal", title: "PayPal" },
@@ -33,10 +18,6 @@ const paymentMethods = [
 ];
 
 const LeftPane = () => {
-  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(
-    deliveryMethods[0]
-  );
-
   return (
     <div>
       <div className="mt-10">
