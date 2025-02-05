@@ -18,6 +18,8 @@ const RightPane = () => {
   } = useCartStore();
   const { checkoutData, setCartItems, calculateTotals } = useCheckoutStore();
 
+  // console.log("Checkout Data [RightPane]", checkoutData);
+
   // Sync cart data with checkout store
   useEffect(() => {
     if (checkoutData.cartItems.length === 0 && cartItems.length > 0) {
@@ -43,9 +45,12 @@ const RightPane = () => {
   }, [cartItems, setCartItems, calculateTotals]);
 
   // Taxes, Shipping & Total
-  const coupon = 5.0;
+  // const coupon = 5.0;
+  // const shipping = checkoutData.shippingCost || 0;
+  // const total = checkoutData.subtotal + shipping;
+
   const shipping = checkoutData.shippingCost || 0;
-  const total = checkoutData.subtotal + shipping;
+  const total = checkoutData.total;
 
   // Makes sure Zustand states are loaded
   if (isLoading) {
@@ -79,12 +84,37 @@ const RightPane = () => {
             </dd>
           </div>
           {/* DEMO BLOCK FOR COUPON APPLIED  */}
-          <div className="flex items-center justify-between">
-            <dt className="text-sm">Coupon Applied ($5 fixed):</dt>
-            <dd className="text-sm font-medium text-gray-900">
-              ${coupon.toFixed(2)}
-            </dd>
-          </div>
+          {/* Coupon Discount - Only show if a coupon is applied */}
+          {/* Coupon Discount */}
+          {checkoutData.coupon && (
+            <div className="flex flex-col text-green-600">
+              <div className="flex items-center justify-between">
+                <dt className="text-sm">
+                  Coupon Applied ({checkoutData.coupon.code}):
+                </dt>
+                <dd className="text-sm font-medium">
+                  -${checkoutData.discountTotal.toFixed(2)}
+                </dd>
+              </div>
+              {/* 🔥 Small text for coupon description */}
+              {checkoutData.coupon.description && (
+                <p className="text-xs text-gray-500">
+                  {checkoutData.coupon.description}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* {checkoutData.coupon && (
+            <div className="flex items-center justify-between text-green-600">
+              <dt className="text-sm">
+                Coupon Applied ({checkoutData.coupon.code}):
+              </dt>
+              <dd className="text-sm font-medium">
+                -${checkoutData.discountTotal.toFixed(2)}
+              </dd>
+            </div>
+          )} */}
           {/* THE APPLY COUPON BLOCK */}
           <ApplyCoupon />
           <div className="flex items-center justify-between border-t border-gray-200 pt-6">

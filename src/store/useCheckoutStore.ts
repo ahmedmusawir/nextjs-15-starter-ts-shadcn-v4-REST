@@ -118,6 +118,11 @@ export const useCheckoutStore = create<CheckoutStore>()(
           const taxTotal = 0; // Future implementation
           const total = subtotal + shippingCost - discount;
 
+          console.log(
+            "calculateTotals: discount [useCheckoutStore.ts]",
+            discount
+          );
+
           return {
             checkoutData: { ...state.checkoutData, subtotal, taxTotal, total },
           };
@@ -129,7 +134,7 @@ export const useCheckoutStore = create<CheckoutStore>()(
           const { checkoutData } = state;
 
           // Find the coupon object by its code
-          const couponList = getCouponsFromStorage(); // Example function to fetch coupons
+          const couponList = getCouponsFromStorage();
           const validCoupon = couponList.find((c) => c.code === code);
 
           if (!validCoupon || !validateCoupon(validCoupon, checkoutData)) {
@@ -142,25 +147,69 @@ export const useCheckoutStore = create<CheckoutStore>()(
             };
           }
 
-          // Apply the coupon
+          // Apply the coupon and get updated checkout data
           const updatedCheckoutData = applyCoupon(validCoupon, checkoutData);
 
-          return { checkoutData: updatedCheckoutData };
+          console.log(
+            "applyCoupon fn [useCheckoutStore.ts]",
+            updatedCheckoutData
+          );
+
+          // Extract discount value
+          const discountTotal = calculateCouponDiscount(
+            validCoupon,
+            checkoutData.cartItems,
+            checkoutData.subtotal
+          );
+
+          // First, update Zustand state
+          set((prevState) => {
+            const newState = {
+              checkoutData: {
+                ...prevState.checkoutData,
+                ...updatedCheckoutData,
+                discountTotal,
+              },
+            };
+            console.log("Updated Zustand state with discount:", newState);
+            return newState;
+          });
+
+          // Ensure total is recalculated after the state has updated
+          setTimeout(() => {
+            console.log("Triggering calculateTotals...");
+            get().calculateTotals();
+          }, 50);
+
+          return { checkoutData: { ...updatedCheckoutData, discountTotal } };
         }),
 
-      // Remove Coupon from Checkout
       removeCoupon: () =>
-        set((state) => ({
-          checkoutData: {
-            ...state.checkoutData,
-            coupon: null,
-            discountTotal: 0,
-            shippingMethod: "flat_rate", // Reset to default
-            shippingCost: state.checkoutData.shippingCost, // Keep the existing cost
-            total:
-              state.checkoutData.subtotal + state.checkoutData.shippingCost, // Restore original total
-          },
-        })),
+        set((state) => {
+          const { checkoutData } = state;
+
+          // Restore original shipping cost based on subtotal
+          let restoredShippingCost = 0;
+
+          if (checkoutData.subtotal < 100) {
+            restoredShippingCost = 10; // Base flat rate for smaller orders
+          } else if (checkoutData.subtotal < 250) {
+            restoredShippingCost = 20; // Mid-tier rate
+          } else {
+            restoredShippingCost = 35; // Highest flat rate for large orders
+          }
+
+          return {
+            checkoutData: {
+              ...checkoutData,
+              coupon: null, // Remove the applied coupon
+              discountTotal: 0, // Reset discount
+              shippingMethod: "flat_rate", // Force it back to Flat Rate
+              shippingCost: restoredShippingCost, // Reset shipping based on subtotal
+              total: checkoutData.subtotal + restoredShippingCost, // Ensure total recalculates properly
+            },
+          };
+        }),
 
       // Reset Checkout (After Order is Placed)
       resetCheckout: () =>

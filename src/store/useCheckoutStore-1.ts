@@ -24,6 +24,7 @@ interface CheckoutStore {
   calculateTotals: () => void;
   resetCheckout: () => void;
   applyCoupon: (code: string) => void;
+  removeCoupon: () => void;
 }
 
 export const useCheckoutStore = create<CheckoutStore>()(
@@ -117,18 +118,24 @@ export const useCheckoutStore = create<CheckoutStore>()(
           const taxTotal = 0; // Future implementation
           const total = subtotal + shippingCost - discount;
 
+          console.log(
+            "calculateTotals: discount [useCheckoutStore.ts]",
+            discount
+          );
+
           return {
             checkoutData: { ...state.checkoutData, subtotal, taxTotal, total },
           };
         }),
 
-      // Apply Coupon
+      // Apply Coupon Zustand Function
+      // Apply Coupon Zustand Function
       applyCoupon: (code) =>
         set((state) => {
           const { checkoutData } = state;
 
           // Find the coupon object by its code
-          const couponList = getCouponsFromStorage(); // Example function to fetch coupons
+          const couponList = getCouponsFromStorage(); // Function fetching coupons
           const validCoupon = couponList.find((c) => c.code === code);
 
           if (!validCoupon || !validateCoupon(validCoupon, checkoutData)) {
@@ -141,10 +148,108 @@ export const useCheckoutStore = create<CheckoutStore>()(
             };
           }
 
-          // Apply the coupon
+          // ✅ Apply the coupon and get the updated checkout data
           const updatedCheckoutData = applyCoupon(validCoupon, checkoutData);
 
-          return { checkoutData: updatedCheckoutData };
+          console.log(
+            "applyCoupon fn [useCheckoutStore.ts]",
+            updatedCheckoutData
+          );
+
+          // ✅ Extract the discount value from the applied coupon
+          const discountTotal = calculateCouponDiscount(
+            validCoupon,
+            checkoutData.cartItems,
+            checkoutData.subtotal
+          );
+
+          // ✅ Ensure `discountTotal` is explicitly updated
+          const updatedState = {
+            checkoutData: {
+              ...updatedCheckoutData,
+              discountTotal, // ✅ Store discountTotal properly
+            },
+          };
+
+          // ✅ Apply the updated state
+          set(updatedState);
+
+          // ✅ Now call `calculateTotals()` AFTER setting `discountTotal`
+          get().calculateTotals();
+
+          return updatedState;
+        }),
+
+      // applyCoupon: (code) =>
+      //   set((state) => {
+      //     const { checkoutData } = state;
+
+      //     // Find the coupon object by its code
+      //     const couponList = getCouponsFromStorage(); // Example function to fetch coupons
+      //     const validCoupon = couponList.find((c) => c.code === code);
+
+      //     if (!validCoupon || !validateCoupon(validCoupon, checkoutData)) {
+      //       return {
+      //         checkoutData: {
+      //           ...checkoutData,
+      //           coupon: null,
+      //           discountTotal: 0,
+      //         },
+      //       };
+      //     }
+
+      //     // Apply the coupon
+      //     const updatedCheckoutData = applyCoupon(validCoupon, checkoutData);
+
+      //     console.log(
+      //       "applyCoupon fn [useCheckoutStore.ts]",
+      //       updatedCheckoutData
+      //     );
+
+      //     // ✅ Explicitly update discountTotal before recalculating totals
+      //     const updatedState = {
+      //       checkoutData: {
+      //         ...updatedCheckoutData,
+      //         discountTotal: updatedCheckoutData.discount, // ✅ Ensure discount is updated
+      //       },
+      //     };
+
+      //     // ✅ Apply the updated state first
+      //     set(updatedState);
+
+      //     // ✅ Now call `calculateTotals()` AFTER discountTotal is set
+      //     get().calculateTotals();
+
+      //     return updatedState;
+      //   }),
+
+      // Remove Coupon from Checkout
+      // Function to remove coupon and reset totals
+      removeCoupon: () =>
+        set((state) => {
+          const { checkoutData } = state;
+
+          // Restore original shipping cost based on subtotal
+          let restoredShippingCost = 0;
+
+          if (checkoutData.subtotal < 100) {
+            restoredShippingCost = 10; // Base flat rate for smaller orders
+          } else if (checkoutData.subtotal < 250) {
+            restoredShippingCost = 20; // Mid-tier rate
+          } else {
+            restoredShippingCost = 35; // Highest flat rate for large orders
+          }
+
+          return {
+            checkoutData: {
+              ...checkoutData,
+              coupon: null, // Remove the applied coupon
+              discountTotal: 0, // Reset discount
+              shippingMethod: "flat_rate", // Force it back to Flat Rate
+              shippingCost: restoredShippingCost, // Reset shipping based on subtotal
+              total: checkoutData.subtotal + restoredShippingCost, // Ensure total recalculates properly
+            },
+          };
         }),
 
       // Reset Checkout (After Order is Placed)

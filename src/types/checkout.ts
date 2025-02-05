@@ -32,6 +32,7 @@ export interface CheckoutData {
     code: string;
     discount: number;
     free_shipping: boolean;
+    description: string;
   } | null; // Allow null explicitly
   subtotal: number;
   taxTotal: number;

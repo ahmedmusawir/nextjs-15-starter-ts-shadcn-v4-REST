@@ -73,6 +73,7 @@ export const fetchAllCoupons = async (): Promise<Coupon[]> => {
     return coupons.map((coupon: any) => ({
       id: coupon.id,
       code: coupon.code,
+      description: coupon.description,
       discount_type: coupon.discount_type,
       discount_value: parseFloat(coupon.amount),
       free_shipping: coupon.free_shipping,

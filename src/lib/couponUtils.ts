@@ -8,23 +8,7 @@
 
 import { CheckoutData } from "@/types/checkout";
 import { CartItem } from "@/types/cart";
-
-interface Coupon {
-  id: number;
-  code: string;
-  discount_type: "fixed_cart" | "percent" | "product";
-  discount_value: number;
-  free_shipping: boolean;
-  min_spend: string;
-  max_spend: string;
-  products_included: number[];
-  products_excluded: number[];
-  categories_included: number[];
-  categories_excluded: number[];
-  usage_limit: number | null;
-  usage_limit_per_user: number | null;
-  expires_on: string; // Date string
-}
+import { Coupon } from "@/types/coupon";
 
 /**
  * Validates a coupon based on expiry date, min/max spend, and product/category restrictions.
@@ -124,7 +108,7 @@ export const applyCoupon = (
     case "percent":
       discountAmount = (checkoutData.subtotal * coupon.discount_value) / 100;
       break;
-    case "product":
+    case "fixed_product":
       discountAmount = checkoutData.cartItems.reduce((total, item) => {
         if (coupon.products_included.includes(item.id)) {
           return (
@@ -151,6 +135,7 @@ export const applyCoupon = (
     shippingCost: updatedShippingCost,
     coupon: {
       code: coupon.code,
+      description: coupon.description,
       discount: discountAmount, // Ensuring this is set correctly
       free_shipping: coupon.free_shipping,
     },
@@ -209,15 +194,12 @@ export const calculateCouponDiscount = (
 
   let discount = 0;
 
-  const normalizedDiscountType =
-    coupon.discount_type === "product" ? "fixed_product" : coupon.discount_type;
-
   // Apply discount based on type
-  if (normalizedDiscountType === "fixed_cart") {
+  if (coupon.discount_type === "fixed_cart") {
     discount = coupon.discount_value;
-  } else if (normalizedDiscountType === "percent") {
+  } else if (coupon.discount_type === "percent") {
     discount = (coupon.discount_value / 100) * subtotal;
-  } else if (normalizedDiscountType === "fixed_product") {
+  } else if (coupon.discount_type === "fixed_product") {
     discount = cartItems.reduce((totalDiscount, item) => {
       if (coupon.products_included.includes(item.id)) {
         return totalDiscount + coupon.discount_value * item.quantity;
@@ -245,6 +227,7 @@ export const getCouponsFromStorage = (): Coupon[] => {
 
   try {
     const coupons: Coupon[] = JSON.parse(script.textContent || "[]");
+    // console.log("coupons from json [couponUtils]", coupons);
     return coupons;
   } catch (error) {
     console.error("Error parsing coupon data:", error);
