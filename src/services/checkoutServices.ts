@@ -19,10 +19,7 @@
  * ```
  */
 import { WOOCOM_REST_GET_SHIPPING_OPTIONS } from "@/rest-api/checkout";
-// console.log(
-//   "WOOCOM_REST_GET_SHIPPING_OPTIONS [checkoutServices.ts]",
-//   WOOCOM_REST_GET_SHIPPING_OPTIONS
-// );
+
 export const fetchShippingOptions = async (): Promise<any> => {
   try {
     const response = await fetch(WOOCOM_REST_GET_SHIPPING_OPTIONS || "");
@@ -60,6 +57,33 @@ export const fetchShippingOptions = async (): Promise<any> => {
   }
 };
 
+/**
+ * Fetches all available WooCommerce coupons via the REST API.
+ *
+ * This function retrieves the full list of coupons from WooCommerce and transforms
+ * the raw API response into a structured `Coupon` format for easy use within the application.
+ *
+ * - Performs a `fetch` request to the WooCommerce REST API endpoint for coupons.
+ * - Ensures the response is valid and throws an error if the request fails.
+ * - Maps and transforms the API response into a standardized `Coupon` object structure.
+ * - Parses discount values as floats to ensure numerical operations are possible.
+ * - Extracts relevant coupon properties, including:
+ *   - `id`: Unique identifier for the coupon.
+ *   - `code`: The coupon code entered by users.
+ *   - `description`: A brief explanation of the coupon.
+ *   - `discount_type`: Defines how the discount is applied (`fixed_cart`, `percent`, `fixed_product`).
+ *   - `discount_value`: The discount amount parsed as a number.
+ *   - `free_shipping`: Boolean indicating if the coupon enables free shipping.
+ *   - `min_spend` & `max_spend`: Minimum and maximum cart values required for the coupon.
+ *   - `products_included` & `products_excluded`: Specific product IDs that the coupon applies to or excludes.
+ *   - `categories_included` & `categories_excluded`: Categories that are eligible or restricted.
+ *   - `usage_limit`: Total number of times the coupon can be used.
+ *   - `usage_limit_per_user`: Number of times a single user can use the coupon.
+ *   - `expires_on`: Expiration date of the coupon.
+ *
+ * @returns {Promise<Coupon[]>} A promise resolving to an array of structured coupon objects.
+ * @throws {Error} Logs an error if the API request fails and returns an empty array.
+ */
 import { WOOCOM_REST_GET_ALL_COUPONS } from "@/rest-api/checkout";
 
 export const fetchAllCoupons = async (): Promise<Coupon[]> => {
@@ -90,6 +114,59 @@ export const fetchAllCoupons = async (): Promise<Coupon[]> => {
   } catch (error) {
     console.error("Error fetching coupons:", error);
     return [];
+  }
+};
+
+/**
+ * Fetches a WooCommerce coupon by its code.
+ * Makes a real-time API request to check if the coupon is valid.
+ *
+ * @param {string} couponCode - The coupon code entered by the user.
+ * @returns {Promise<Coupon | null>} - Returns the formatted coupon data if found, otherwise null.
+ */
+import { WOOCOM_REST_GET_COUPON_BY_CODE } from "@/rest-api/checkout";
+
+export const fetchCouponByCode = async (
+  couponCode: string
+): Promise<Coupon | null> => {
+  try {
+    const response = await fetch(WOOCOM_REST_GET_COUPON_BY_CODE(couponCode));
+
+    if (!response.ok) {
+      console.error(`Failed to fetch coupon: ${couponCode}`);
+      return null;
+    }
+
+    const coupons = await response.json();
+
+    // Ensure we received at least one valid coupon
+    if (!coupons.length) {
+      console.warn(`Coupon not found: ${couponCode}`);
+      return null;
+    }
+
+    const coupon = coupons[0]; // WooCommerce API returns an array, use the first item
+
+    return {
+      id: coupon.id,
+      code: coupon.code,
+      description: coupon.description,
+      discount_type: coupon.discount_type,
+      discount_value: parseFloat(coupon.amount),
+      free_shipping: coupon.free_shipping,
+      min_spend: coupon.minimum_amount,
+      max_spend: coupon.maximum_amount,
+      products_included: coupon.product_ids || [],
+      products_excluded: coupon.excluded_product_ids || [],
+      categories_included: coupon.product_categories || [],
+      categories_excluded: coupon.excluded_product_categories || [],
+      usage_limit: coupon.usage_limit,
+      usage_limit_per_user: coupon.usage_limit_per_user,
+      expires_on: coupon.date_expires,
+    };
+  } catch (error) {
+    console.error("Error fetching coupon by code:", error);
+    return null;
   }
 };
 

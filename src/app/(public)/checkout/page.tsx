@@ -1,6 +1,7 @@
 import CheckoutPageContent from "./CheckoutPageContent";
 import {
   fetchAllCoupons,
+  fetchCouponByCode,
   fetchShippingOptions,
 } from "@/services/checkoutServices";
 
@@ -15,10 +16,14 @@ const Checkout = async () => {
 
   const shippingData = await fetchShippingOptions();
 
-  console.log("Shipping Options Fetched:[/checkout/page.tsx]", shippingData);
+  // console.log("Shipping Options Fetched:[/checkout/page.tsx]", shippingData);
 
+  // JUST FOR TESTING ... REMOVE LATER
   const couponData = await fetchAllCoupons();
   console.log("Coupons Fetched:", couponData);
+
+  // const couponData = await fetchCouponByCode("FREESHIP2025");
+  // console.log("Fetched Coupon Data:", couponData);
 
   return (
     <div>
@@ -32,13 +37,13 @@ const Checkout = async () => {
       />
 
       {/* Embed Coupon Data */}
-      <script
+      {/* <script
         id="coupon-data"
         type="application/json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(couponData),
         }}
-      />
+      /> */}
 
       {/* Main Checkout Page Content */}
       <CheckoutPageContent />

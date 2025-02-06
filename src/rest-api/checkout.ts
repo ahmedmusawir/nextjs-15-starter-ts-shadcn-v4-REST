@@ -16,6 +16,9 @@ export const WOOCOM_REST_GET_SHIPPING_OPTIONS =
 
 export const WOOCOM_REST_GET_ALL_COUPONS = `${BASE_URL}/coupons?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
 
+export const WOOCOM_REST_GET_COUPON_BY_CODE = (couponCode: string) =>
+  `${BASE_URL}/coupons?code=${couponCode}&consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
+
 export const WOOCOM_REST_GET_SHIPPING_ZONES = `${BASE_URL}/shipping/zones?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
 
 export const WOOCOM_REST_GET_SHIPPING_ZONE_LOCATIONS = (zoneId: number) =>
