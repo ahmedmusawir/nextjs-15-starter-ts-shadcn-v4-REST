@@ -1,6 +1,6 @@
 const BASE_URL = process.env.NEXT_PUBLIC_WOOCOM_REST_API_URL;
 const CONSUMER_KEY = process.env.WOOCOM_CONSUMER_KEY;
-const CONSUMER_SECRET = process.env.WOOCOM_CONSUMER_SECRET_KEY;
+const CONSUMER_SECRET = process.env.WOOCOM_CONSUMER_SECRET;
 
 // Perform the check only on the server side
 if (typeof window === "undefined") {

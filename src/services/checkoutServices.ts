@@ -28,7 +28,7 @@ export const fetchShippingOptions = async (): Promise<any> => {
     const result = await response.json();
     const data = result.acf;
 
-    console.log("ACF data [checkoutServices.ts]", data);
+    // console.log("ACF data [checkoutServices.ts]", data);
 
     return {
       flat_rates: [
@@ -124,29 +124,33 @@ export const fetchAllCoupons = async (): Promise<Coupon[]> => {
  * @param {string} couponCode - The coupon code entered by the user.
  * @returns {Promise<Coupon | null>} - Returns the formatted coupon data if found, otherwise null.
  */
-import { WOOCOM_REST_GET_COUPON_BY_CODE } from "@/rest-api/checkout";
+const NEXT_API_URL = process.env.NEXT_PUBLIC_APP_URL;
 
 export const fetchCouponByCode = async (
   couponCode: string
 ): Promise<Coupon | null> => {
   try {
-    const response = await fetch(WOOCOM_REST_GET_COUPON_BY_CODE(couponCode));
+    if (!NEXT_API_URL) {
+      console.error("Missing NEXT_PUBLIC_APP_URL in environment variables");
+      return null;
+    }
+
+    const response = await fetch(
+      `${NEXT_API_URL}/api/get-coupon-by-code?code=${couponCode}`
+    );
 
     if (!response.ok) {
-      console.error(`Failed to fetch coupon: ${couponCode}`);
+      console.warn(`Coupon not found or invalid: ${couponCode}`);
       return null;
     }
 
-    const coupons = await response.json();
+    const rawCoupon = await response.json();
+    const coupon = rawCoupon[0];
+    console.log("coupon [checkoutServices.ts]", coupon);
 
-    // Ensure we received at least one valid coupon
-    if (!coupons.length) {
-      console.warn(`Coupon not found: ${couponCode}`);
-      return null;
-    }
+    if (!coupon) return null;
 
-    const coupon = coupons[0]; // WooCommerce API returns an array, use the first item
-
+    // Transform data into structured format
     return {
       id: coupon.id,
       code: coupon.code,
@@ -161,11 +165,31 @@ export const fetchCouponByCode = async (
       categories_included: coupon.product_categories || [],
       categories_excluded: coupon.excluded_product_categories || [],
       usage_limit: coupon.usage_limit,
+      usage_count: coupon.usage_count, // NEW: Track how many times the coupon has been used
       usage_limit_per_user: coupon.usage_limit_per_user,
+      used_by: coupon.used_by || [], // NEW: Track which users have used the coupon
       expires_on: coupon.date_expires,
     };
+
+    // return {
+    //   id: coupon.id,
+    //   code: coupon.code,
+    //   description: coupon.description,
+    //   discount_type: coupon.discount_type,
+    //   discount_value: parseFloat(coupon.amount),
+    //   free_shipping: coupon.free_shipping,
+    //   min_spend: coupon.minimum_amount,
+    //   max_spend: coupon.maximum_amount,
+    //   products_included: coupon.product_ids || [],
+    //   products_excluded: coupon.excluded_product_ids || [],
+    //   categories_included: coupon.product_categories || [],
+    //   categories_excluded: coupon.excluded_product_categories || [],
+    //   usage_limit: coupon.usage_limit,
+    //   usage_limit_per_user: coupon.usage_limit_per_user,
+    //   expires_on: coupon.date_expires,
+    // };
   } catch (error) {
-    console.error("Error fetching coupon by code:", error);
+    console.error("Error fetching coupon:", error);
     return null;
   }
 };

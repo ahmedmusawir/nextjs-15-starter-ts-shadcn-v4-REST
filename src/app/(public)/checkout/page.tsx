@@ -22,8 +22,8 @@ const Checkout = async () => {
   const couponData = await fetchAllCoupons();
   console.log("Coupons Fetched:", couponData);
 
-  // const couponData = await fetchCouponByCode("FREESHIP2025");
-  // console.log("Fetched Coupon Data:", couponData);
+  const singleCoupon = await fetchCouponByCode("free8");
+  console.log("Single Coupon Data:", singleCoupon);
 
   return (
     <div>

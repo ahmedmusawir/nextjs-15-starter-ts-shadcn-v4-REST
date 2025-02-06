@@ -5,7 +5,6 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import {
   applyCoupon,
   calculateCouponDiscount,
-  getCouponsFromStorage,
   validateCoupon,
 } from "@/lib/couponUtils";
 import { Coupon } from "@/types/coupon";
@@ -23,7 +22,8 @@ interface CheckoutStore {
   setCoupon: (coupon: CheckoutData["coupon"]) => void;
   calculateTotals: () => void;
   resetCheckout: () => void;
-  applyCoupon: (code: string) => void;
+  applyCoupon: (coupon: Coupon) => void;
+  // applyCoupon: (coupon: CheckoutData["coupon"]) => void;
   removeCoupon: () => void;
 }
 
@@ -129,15 +129,11 @@ export const useCheckoutStore = create<CheckoutStore>()(
         }),
 
       // Apply Coupon Zustand Function
-      applyCoupon: (code) =>
+      applyCoupon: (coupon) =>
         set((state) => {
           const { checkoutData } = state;
 
-          // Find the coupon object by its code
-          const couponList = getCouponsFromStorage();
-          const validCoupon = couponList.find((c) => c.code === code);
-
-          if (!validCoupon || !validateCoupon(validCoupon, checkoutData)) {
+          if (!coupon || !validateCoupon(coupon, checkoutData)) {
             return {
               checkoutData: {
                 ...checkoutData,
@@ -148,7 +144,7 @@ export const useCheckoutStore = create<CheckoutStore>()(
           }
 
           // Apply the coupon and get updated checkout data
-          const updatedCheckoutData = applyCoupon(validCoupon, checkoutData);
+          const updatedCheckoutData = applyCoupon(coupon, checkoutData);
 
           console.log(
             "applyCoupon fn [useCheckoutStore.ts]",
@@ -157,7 +153,7 @@ export const useCheckoutStore = create<CheckoutStore>()(
 
           // Extract discount value
           const discountTotal = calculateCouponDiscount(
-            validCoupon,
+            coupon,
             checkoutData.cartItems,
             checkoutData.subtotal
           );

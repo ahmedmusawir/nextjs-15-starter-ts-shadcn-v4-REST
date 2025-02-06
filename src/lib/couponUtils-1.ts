@@ -19,14 +19,14 @@ import { Coupon } from "@/types/coupon";
 export const validateCoupon = (
   coupon: Coupon,
   checkoutData: CheckoutData
-): { isValid: boolean; message: string } => {
+): boolean => {
   const now = new Date();
   const expiryDate = new Date(coupon.expires_on);
 
   // 1. Check if coupon is expired
   if (now > expiryDate) {
     console.warn("Coupon expired:", coupon.code);
-    return { isValid: false, message: "This coupon has expired." };
+    return false;
   }
 
   // 2. Validate min/max spend requirements
@@ -36,21 +36,11 @@ export const validateCoupon = (
 
   if (minSpend > 0 && subtotal < minSpend) {
     console.warn("Minimum spend not met for coupon:", coupon.code);
-    return {
-      isValid: false,
-      message: `Your order must be at least $${minSpend.toFixed(
-        2
-      )} to use this coupon.`,
-    };
+    return false;
   }
   if (maxSpend > 0 && subtotal > maxSpend) {
     console.warn("Maximum spend exceeded for coupon:", coupon.code);
-    return {
-      isValid: false,
-      message: `This coupon can only be used on orders up to $${maxSpend.toFixed(
-        2
-      )}.`,
-    };
+    return false;
   }
 
   // 3. Validate product/category restrictions
@@ -65,10 +55,7 @@ export const validateCoupon = (
     !cartProductIds.some((id) => coupon.products_included.includes(id))
   ) {
     console.warn("Coupon not applicable to any cart items:", coupon.code);
-    return {
-      isValid: false,
-      message: "This coupon is not valid for any items in your cart.",
-    };
+    return false;
   }
 
   if (
@@ -76,10 +63,7 @@ export const validateCoupon = (
     cartProductIds.some((id) => coupon.products_excluded.includes(id))
   ) {
     console.warn("Coupon applies to excluded products:", coupon.code);
-    return {
-      isValid: false,
-      message: "This coupon cannot be used with some items in your cart.",
-    };
+    return false;
   }
 
   if (
@@ -87,10 +71,7 @@ export const validateCoupon = (
     !cartCategoryIdsOnly.some((id) => coupon.categories_included.includes(id))
   ) {
     console.warn("Coupon not applicable to any cart categories:", coupon.code);
-    return {
-      isValid: false,
-      message: "This coupon is not valid for your selected product categories.",
-    };
+    return false;
   }
 
   if (
@@ -98,10 +79,7 @@ export const validateCoupon = (
     cartCategoryIdsOnly.some((id) => coupon.categories_excluded.includes(id))
   ) {
     console.warn("Coupon applies to excluded categories:", coupon.code);
-    return {
-      isValid: false,
-      message: "This coupon cannot be used with some categories in your cart.",
-    };
+    return false;
   }
 
   // 4. Validate global usage limit
@@ -111,10 +89,7 @@ export const validateCoupon = (
     coupon?.usage_count >= coupon.usage_limit
   ) {
     console.warn("Coupon has reached its maximum usage limit:", coupon.code);
-    return {
-      isValid: false,
-      message: "This coupon has reached its maximum usage limit.",
-    };
+    return false;
   }
 
   // 5. Validate per-user usage limit
@@ -131,13 +106,10 @@ export const validateCoupon = (
       "User has reached the max usage limit for this coupon:",
       coupon.code
     );
-    return {
-      isValid: false,
-      message: `You have already used this coupon the maximum number of times (${coupon.usage_limit_per_user}).`,
-    };
+    return false;
   }
 
-  return { isValid: true, message: "" };
+  return true;
 };
 
 /**

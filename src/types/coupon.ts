@@ -3,8 +3,8 @@ type DiscountType = "fixed_cart" | "percent" | "fixed_product";
 export interface Coupon {
   id: number;
   code: string;
-  discount_type: DiscountType;
   description: string;
+  discount_type: DiscountType;
   discount_value: number;
   free_shipping: boolean;
   min_spend: string;
@@ -13,15 +13,18 @@ export interface Coupon {
   products_excluded: number[];
   categories_included: number[];
   categories_excluded: number[];
-  usage_limit: number | null;
-  usage_limit_per_user: number | null;
+  usage_limit: number | null; // NEW: Max times this coupon can be used
+  usage_count: number | null; // NEW: Track how many times it's been used
+  usage_limit_per_user: number | null; // NEW: Max times a single user can use it
+  used_by: string[]; // NEW: Track which users have used the coupon
   expires_on: string;
 }
 
-// interface Coupon {
+// export interface Coupon {
 //   id: number;
 //   code: string;
-//   discount_type: "fixed_cart" | "percent" | "product";
+//   discount_type: DiscountType;
+//   description: string;
 //   discount_value: number;
 //   free_shipping: boolean;
 //   min_spend: string;
@@ -32,5 +35,5 @@ export interface Coupon {
 //   categories_excluded: number[];
 //   usage_limit: number | null;
 //   usage_limit_per_user: number | null;
-//   expires_on: string; // Date string
+//   expires_on: string;
 // }

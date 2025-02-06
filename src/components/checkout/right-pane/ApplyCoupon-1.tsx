@@ -32,14 +32,8 @@ const ApplyCoupon = () => {
         return;
       }
 
-      // if (!validateCoupon(coupon, checkoutData)) {
-      //   setError("Coupon does not meet the requirements.");
-      //   return;
-      // }
-
-      const validation = validateCoupon(coupon, checkoutData);
-      if (!validation.isValid) {
-        setError(validation.message);
+      if (!validateCoupon(coupon, checkoutData)) {
+        setError("Coupon does not meet the requirements.");
         return;
       }
 
