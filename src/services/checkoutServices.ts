@@ -170,24 +170,6 @@ export const fetchCouponByCode = async (
       used_by: coupon.used_by || [], // NEW: Track which users have used the coupon
       expires_on: coupon.date_expires,
     };
-
-    // return {
-    //   id: coupon.id,
-    //   code: coupon.code,
-    //   description: coupon.description,
-    //   discount_type: coupon.discount_type,
-    //   discount_value: parseFloat(coupon.amount),
-    //   free_shipping: coupon.free_shipping,
-    //   min_spend: coupon.minimum_amount,
-    //   max_spend: coupon.maximum_amount,
-    //   products_included: coupon.product_ids || [],
-    //   products_excluded: coupon.excluded_product_ids || [],
-    //   categories_included: coupon.product_categories || [],
-    //   categories_excluded: coupon.excluded_product_categories || [],
-    //   usage_limit: coupon.usage_limit,
-    //   usage_limit_per_user: coupon.usage_limit_per_user,
-    //   expires_on: coupon.date_expires,
-    // };
   } catch (error) {
     console.error("Error fetching coupon:", error);
     return null;

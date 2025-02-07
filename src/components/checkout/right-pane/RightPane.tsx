@@ -44,11 +44,6 @@ const RightPane = () => {
     }
   }, [cartItems, setCartItems, calculateTotals]);
 
-  // Taxes, Shipping & Total
-  // const coupon = 5.0;
-  // const shipping = checkoutData.shippingCost || 0;
-  // const total = checkoutData.subtotal + shipping;
-
   const shipping = checkoutData.shippingCost || 0;
   const total = checkoutData.total;
 

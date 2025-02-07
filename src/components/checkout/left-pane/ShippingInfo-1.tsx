@@ -33,49 +33,27 @@ const ShippingInfo = () => {
 
     const { local_pickup_zipcodes, flat_rates, is_free_shipping_for_local } =
       data;
+
     let methods: string[] = [];
+
+    // Ensure ZIP Code is valid before using it
     const isValidZip = /^\d{5}$/.test(shipping.postcode);
 
     if (!isValidZip) {
-      setAvailableMethods([]);
+      setAvailableMethods([]); // Clear available methods
       return;
     }
 
-    // if (local_pickup_zipcodes.includes(shipping.postcode)) {
-    //   methods.push(
-    //     is_free_shipping_for_local ? "Free Shipping" : "Local Pickup"
-    //   );
-    // } else {
-    //   const applicableRates = flat_rates.filter(
-    //     (rate: { subtotal_threshold: number; shipping_cost: number }) =>
-    //       subtotal >= rate.subtotal_threshold
-    //   );
-    //   const applicableRate =
-    //     applicableRates.length > 0
-    //       ? applicableRates.reduce(
-    //           (
-    //             prev: { subtotal_threshold: number; shipping_cost: number },
-    //             curr: { subtotal_threshold: number; shipping_cost: number }
-    //           ) =>
-    //             curr.subtotal_threshold > prev.subtotal_threshold ? curr : prev
-    //         )
-    //       : flat_rates[0];
-    //   methods.push(`Flat Rate - $${applicableRate?.shipping_cost}`);
-    // }
-
     if (local_pickup_zipcodes.includes(shipping.postcode)) {
-      if (is_free_shipping_for_local) {
-        // Push both options when free shipping is enabled
-        methods.push("Free Shipping");
-        methods.push("Local Pickup");
-      } else {
-        methods.push("Local Pickup");
-      }
+      methods.push(
+        is_free_shipping_for_local ? "Free Shipping" : "Local Pickup"
+      );
     } else {
       const applicableRates = flat_rates.filter(
         (rate: { subtotal_threshold: number; shipping_cost: number }) =>
           subtotal >= rate.subtotal_threshold
       );
+
       const applicableRate =
         applicableRates.length > 0
           ? applicableRates.reduce(
@@ -86,11 +64,13 @@ const ShippingInfo = () => {
                 curr.subtotal_threshold > prev.subtotal_threshold ? curr : prev
             )
           : flat_rates[0];
+
       methods.push(`Flat Rate - $${applicableRate?.shipping_cost}`);
     }
+
     setAvailableMethods(methods);
 
-    // Persist shipping method if not already set
+    // ✅ Persist selected method only if user has already made a selection
     if (!checkoutData.shippingMethod) {
       if (methods.includes("Free Shipping")) {
         setShippingMethod("free_shipping", 0);
@@ -102,12 +82,7 @@ const ShippingInfo = () => {
         setShippingMethod("flat_rate", cost);
       }
     }
-  }, [
-    shipping.postcode,
-    subtotal,
-    checkoutData.shippingMethod,
-    setShippingMethod,
-  ]);
+  }, [shipping.postcode, checkoutData.subtotal, checkoutData.shippingMethod]);
 
   const debouncedUpdate = debounce((updatedShipping) => {
     setShipping(updatedShipping);
@@ -119,11 +94,6 @@ const ShippingInfo = () => {
     debouncedUpdate(checkoutData.shipping);
     return () => debouncedUpdate.cancel();
   }, [checkoutData.shipping]);
-
-  // Input change handler updates the store immediately
-  const handleInputChange = (field: keyof typeof shipping, value: string) => {
-    setShipping({ ...shipping, [field]: value });
-  };
 
   return (
     <div className="mt-4">
@@ -143,7 +113,9 @@ const ShippingInfo = () => {
             id="first-name"
             type="text"
             value={shipping.first_name}
-            onChange={(e) => handleInputChange("first_name", e.target.value)}
+            onChange={(e) =>
+              setLocalShipping({ ...shipping, first_name: e.target.value })
+            }
             className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
           />
         </div>
@@ -159,7 +131,9 @@ const ShippingInfo = () => {
             id="last-name"
             type="text"
             value={shipping.last_name}
-            onChange={(e) => handleInputChange("last_name", e.target.value)}
+            onChange={(e) =>
+              setLocalShipping({ ...shipping, last_name: e.target.value })
+            }
             className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
           />
         </div>
@@ -175,7 +149,9 @@ const ShippingInfo = () => {
             id="address"
             type="text"
             value={shipping.address_1}
-            onChange={(e) => handleInputChange("address_1", e.target.value)}
+            onChange={(e) =>
+              setLocalShipping({ ...shipping, address_1: e.target.value })
+            }
             className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
           />
         </div>
@@ -191,7 +167,9 @@ const ShippingInfo = () => {
             id="city"
             type="text"
             value={shipping.city}
-            onChange={(e) => handleInputChange("city", e.target.value)}
+            onChange={(e) =>
+              setLocalShipping({ ...shipping, city: e.target.value })
+            }
             className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
           />
         </div>
@@ -207,7 +185,9 @@ const ShippingInfo = () => {
             id="postcode"
             type="text"
             value={shipping.postcode}
-            onChange={(e) => handleInputChange("postcode", e.target.value)}
+            onChange={(e) =>
+              setLocalShipping({ ...shipping, postcode: e.target.value })
+            }
             className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
           />
         </div>

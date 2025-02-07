@@ -40,36 +40,6 @@ const ShippingMethods = ({
     }
   }, [flat_rates, subtotal]);
 
-  // const computedFlatRate = useMemo(() => {
-  //   // Filter the rates where the subtotal qualifies.
-  //   const applicableRates = flat_rates.filter(
-  //     (rate) => subtotal >= rate.subtotal_threshold
-  //   );
-  //   if (applicableRates.length > 0) {
-  //     // Among the applicable rates, choose the one with the highest shipping_cost.
-  //     return applicableRates.reduce((prev, curr) =>
-  //       curr.shipping_cost > prev.shipping_cost ? curr : prev
-  //     );
-  //   }
-  //   // Fallback in case no rate applies.
-  //   return flat_rates[0];
-  // }, [flat_rates, subtotal]);
-
-  // const computedFlatRate = useMemo(() => {
-  //   // Filter rates where the subtotal meets the threshold.
-  //   const applicableRates = flat_rates.filter(
-  //     (rate) => subtotal >= rate.subtotal_threshold
-  //   );
-  //   // If any rates apply, choose the one with the highest threshold.
-  //   if (applicableRates.length > 0) {
-  //     return applicableRates.reduce((prev, curr) =>
-  //       curr.subtotal_threshold > prev.subtotal_threshold ? curr : prev
-  //     );
-  //   }
-  //   // Fallback to the first rate if none match.
-  //   return flat_rates[0];
-  // }, [flat_rates, subtotal]);
-
   // Build and memoize the shipping options list.
   const shippingOptions = useMemo(() => {
     const fullShippingOptions = [

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { debounce } from "lodash";
+import React, { useEffect } from "react";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
 import ShippingMethods from "./ShippingMethods";
 
@@ -13,14 +12,12 @@ const getShippingData = () => {
 
 const ShippingInfo = () => {
   const { checkoutData, setShipping, setShippingMethod } = useCheckoutStore();
-
-  // Use Zustand's state directly instead of local state reset
-  const [shipping, setLocalShipping] = useState(checkoutData.shipping);
-  const [availableMethods, setAvailableMethods] = useState<string[]>([]);
-  const [shippingData, setShippingData] = useState<{
+  const shipping = checkoutData.shipping; // Directly use the persisted shipping data
+  const [availableMethods, setAvailableMethods] = React.useState<string[]>([]);
+  const [shippingData, setShippingData] = React.useState<{
     local_pickup_zipcodes: string[];
     flat_rates: { subtotal_threshold: number; shipping_cost: number }[];
-    is_free_shipping_for_local_pickup: boolean;
+    is_free_shipping_for_local: boolean;
   } | null>(null);
 
   const subtotal = checkoutData.subtotal;
@@ -41,36 +38,10 @@ const ShippingInfo = () => {
       return;
     }
 
-    // if (local_pickup_zipcodes.includes(shipping.postcode)) {
-    //   methods.push(
-    //     is_free_shipping_for_local ? "Free Shipping" : "Local Pickup"
-    //   );
-    // } else {
-    //   const applicableRates = flat_rates.filter(
-    //     (rate: { subtotal_threshold: number; shipping_cost: number }) =>
-    //       subtotal >= rate.subtotal_threshold
-    //   );
-    //   const applicableRate =
-    //     applicableRates.length > 0
-    //       ? applicableRates.reduce(
-    //           (
-    //             prev: { subtotal_threshold: number; shipping_cost: number },
-    //             curr: { subtotal_threshold: number; shipping_cost: number }
-    //           ) =>
-    //             curr.subtotal_threshold > prev.subtotal_threshold ? curr : prev
-    //         )
-    //       : flat_rates[0];
-    //   methods.push(`Flat Rate - $${applicableRate?.shipping_cost}`);
-    // }
-
     if (local_pickup_zipcodes.includes(shipping.postcode)) {
-      if (is_free_shipping_for_local) {
-        // Push both options when free shipping is enabled
-        methods.push("Free Shipping");
-        methods.push("Local Pickup");
-      } else {
-        methods.push("Local Pickup");
-      }
+      methods.push(
+        is_free_shipping_for_local ? "Free Shipping" : "Local Pickup"
+      );
     } else {
       const applicableRates = flat_rates.filter(
         (rate: { subtotal_threshold: number; shipping_cost: number }) =>
@@ -108,17 +79,6 @@ const ShippingInfo = () => {
     checkoutData.shippingMethod,
     setShippingMethod,
   ]);
-
-  const debouncedUpdate = debounce((updatedShipping) => {
-    setShipping(updatedShipping);
-  }, 300);
-
-  // Ensure persisted shipping data is set properly across page reloads
-  useEffect(() => {
-    setLocalShipping(checkoutData.shipping);
-    debouncedUpdate(checkoutData.shipping);
-    return () => debouncedUpdate.cancel();
-  }, [checkoutData.shipping]);
 
   // Input change handler updates the store immediately
   const handleInputChange = (field: keyof typeof shipping, value: string) => {

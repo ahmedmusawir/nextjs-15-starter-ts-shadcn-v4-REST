@@ -1,17 +1,10 @@
 import { useCheckoutStore } from "@/store/useCheckoutStore";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 const ContactEmail = () => {
   const { checkoutData, setBilling } = useCheckoutStore();
-  const email = checkoutData.billing.email || "";
   const [error, setError] = useState("");
-
-  // Dynamically set isEditing based on whether an email exists
-  const [isEditing, setIsEditing] = useState(!email);
-
-  useEffect(() => {
-    setIsEditing(!email); // Always check Zustand state on mount
-  }, [email]);
+  const [isEditing, setIsEditing] = useState(!checkoutData.billing.email);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBilling({ ...checkoutData.billing, email: e.target.value });
@@ -26,7 +19,7 @@ const ContactEmail = () => {
       return;
     }
     setError("");
-    setIsEditing(false); // Close on successful entry
+    setIsEditing(false);
   };
 
   return (

@@ -41,36 +41,10 @@ const ShippingInfo = () => {
       return;
     }
 
-    // if (local_pickup_zipcodes.includes(shipping.postcode)) {
-    //   methods.push(
-    //     is_free_shipping_for_local ? "Free Shipping" : "Local Pickup"
-    //   );
-    // } else {
-    //   const applicableRates = flat_rates.filter(
-    //     (rate: { subtotal_threshold: number; shipping_cost: number }) =>
-    //       subtotal >= rate.subtotal_threshold
-    //   );
-    //   const applicableRate =
-    //     applicableRates.length > 0
-    //       ? applicableRates.reduce(
-    //           (
-    //             prev: { subtotal_threshold: number; shipping_cost: number },
-    //             curr: { subtotal_threshold: number; shipping_cost: number }
-    //           ) =>
-    //             curr.subtotal_threshold > prev.subtotal_threshold ? curr : prev
-    //         )
-    //       : flat_rates[0];
-    //   methods.push(`Flat Rate - $${applicableRate?.shipping_cost}`);
-    // }
-
     if (local_pickup_zipcodes.includes(shipping.postcode)) {
-      if (is_free_shipping_for_local) {
-        // Push both options when free shipping is enabled
-        methods.push("Free Shipping");
-        methods.push("Local Pickup");
-      } else {
-        methods.push("Local Pickup");
-      }
+      methods.push(
+        is_free_shipping_for_local ? "Free Shipping" : "Local Pickup"
+      );
     } else {
       const applicableRates = flat_rates.filter(
         (rate: { subtotal_threshold: number; shipping_cost: number }) =>

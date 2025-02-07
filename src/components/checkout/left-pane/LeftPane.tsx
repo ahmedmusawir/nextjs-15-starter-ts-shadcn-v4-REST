@@ -1,13 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { Radio, RadioGroup } from "@headlessui/react";
-
-import {
-  CheckCircleIcon,
-  ChevronDownIcon,
-  TrashIcon,
-} from "@heroicons/react/20/solid";
 import ContactEmail from "./ContactEmail";
 import ShippingInfo from "./ShippingInfo";
 
