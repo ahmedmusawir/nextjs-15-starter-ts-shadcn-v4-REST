@@ -120,14 +120,11 @@ const RightPane = () => {
           </div>
         </dl>
         <div className="px-4 py-6">
-          <Link href={"/thankyou"}>
-            <div
-              // type="submit"
-              className="w-full text-center rounded-md bg-indigo-600 px-4 py-3 text-base font-medium text-white hover:bg-indigo-700"
-            >
+          {/* <Link href={"/thankyou"}>
+            <div className="w-full text-center rounded-md bg-indigo-600 px-4 py-3 text-base font-medium text-white hover:bg-indigo-700">
               Confirm order
             </div>
-          </Link>
+          </Link> */}
         </div>
       </div>
     </div>
