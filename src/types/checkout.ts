@@ -22,6 +22,7 @@ export interface CheckoutData {
     state: string;
     postcode: string;
     country: string;
+    email: string; // <-- Added email field
     phone: string;
   };
   paymentMethod: string;

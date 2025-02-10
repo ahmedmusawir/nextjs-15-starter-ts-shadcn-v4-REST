@@ -4,8 +4,6 @@ import React, { useEffect, useState } from "react";
 import { debounce } from "lodash";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
 import ShippingMethods from "./ShippingMethods";
-import ShippingForm from "./ShippingForm";
-import BillingForm from "./BillingForm";
 
 // Function to retrieve shipping data from the embedded script
 const getShippingData = () => {
@@ -107,25 +105,100 @@ const ShippingInfo = () => {
 
   return (
     <div className="mt-4">
-      {/* Shipping From w/ zod validation */}
-      <ShippingForm />
+      <h2 className="text-lg font-semibold text-gray-900">
+        Shipping Information
+      </h2>
 
-      {/* Shipping Method Selection Box */}
-      <div className="mt-10">
-        {shippingData && (
-          <ShippingMethods
-            availableMethods={availableMethods}
-            shippingData={shippingData}
-            subtotal={subtotal}
+      <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
+        <div>
+          <label
+            htmlFor="first-name"
+            className="block text-sm font-medium text-gray-700"
+          >
+            First name
+          </label>
+          <input
+            id="first-name"
+            type="text"
+            value={shipping.first_name}
+            onChange={(e) => handleInputChange("first_name", e.target.value)}
+            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
           />
-        )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="last-name"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Last name
+          </label>
+          <input
+            id="last-name"
+            type="text"
+            value={shipping.last_name}
+            onChange={(e) => handleInputChange("last_name", e.target.value)}
+            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+          />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label
+            htmlFor="address"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Address
+          </label>
+          <input
+            id="address"
+            type="text"
+            value={shipping.address_1}
+            onChange={(e) => handleInputChange("address_1", e.target.value)}
+            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="city"
+            className="block text-sm font-medium text-gray-700"
+          >
+            City
+          </label>
+          <input
+            id="city"
+            type="text"
+            value={shipping.city}
+            onChange={(e) => handleInputChange("city", e.target.value)}
+            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="postcode"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Postal Code
+          </label>
+          <input
+            id="postcode"
+            type="text"
+            value={shipping.postcode}
+            onChange={(e) => handleInputChange("postcode", e.target.value)}
+            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+          />
+        </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10">
-        Billing Information
-      </h2>
-      {/* Billing From w/ zod validation */}
-      {/* <BillingForm /> */}
+      {/* Shipping Method Selection Box */}
+      {shippingData && (
+        <ShippingMethods
+          availableMethods={availableMethods}
+          shippingData={shippingData}
+          subtotal={subtotal}
+        />
+      )}
     </div>
   );
 };

@@ -22,6 +22,7 @@ export async function POST(req: Request) {
     );
 
     // Transform order structure to match WooCommerce API
+    // In your POST handler, update the orderData transformation:
     const orderData = {
       payment_method: checkoutData.paymentMethod,
       payment_method_title: "Online Payment",
@@ -30,6 +31,21 @@ export async function POST(req: Request) {
       line_items: checkoutData.cartItems.map((item: any) => ({
         product_id: item.id,
         quantity: item.quantity,
+        variation_id: item.variation_id || 0, // Use item.variation_id if available, otherwise 0
+        meta_data: [
+          {
+            key: "variations",
+            value: item.variations || [],
+          },
+          {
+            key: "customFields",
+            value: item.customFields || [],
+          },
+          {
+            key: "metadata",
+            value: item.metadata || {},
+          },
+        ],
       })),
       shipping_lines: [
         {
@@ -91,7 +107,6 @@ export async function POST(req: Request) {
 
     const data = await response.json();
     return NextResponse.json(data, { status: 201 });
-    // return NextResponse.json(body, { status: 201 });
   } catch (error) {
     console.error("Order Submission Error:", error);
     return NextResponse.json(

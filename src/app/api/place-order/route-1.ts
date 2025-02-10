@@ -1,3 +1,4 @@
+import { CheckoutData } from "@/types/checkout";
 import { NextResponse } from "next/server";
 
 const BASE_URL = process.env.NEXT_PUBLIC_WOOCOM_REST_API_URL;
@@ -13,14 +14,54 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const checkoutData: CheckoutData = await req.json();
+
+    console.log(
+      "DEBUG: Transformed Checkout cartItems [place-order/route.ts]",
+      checkoutData.cartItems
+    );
+
+    // Transform order structure to match WooCommerce API
+    const orderData = {
+      payment_method: checkoutData.paymentMethod,
+      payment_method_title: "Online Payment",
+      billing: checkoutData.billing,
+      shipping: checkoutData.shipping,
+      line_items: checkoutData.cartItems.map((item: any) => ({
+        product_id: item.id,
+        quantity: item.quantity,
+      })),
+      shipping_lines: [
+        {
+          method_id: checkoutData.shippingMethod,
+          method_title:
+            checkoutData.shippingMethod === "free_shipping"
+              ? "Free Shipping"
+              : "Flat Rate",
+          total: checkoutData.shippingCost.toFixed(2),
+        },
+      ],
+      coupon_lines: checkoutData.coupon
+        ? [
+            {
+              code: checkoutData.coupon.code,
+              used_by: checkoutData.billing.email, // Track who used it
+            },
+          ]
+        : [],
+    };
+
+    console.log(
+      "DEBUG: Transformed Order line_items [place-order/route.ts]",
+      orderData
+    );
 
     // Validate required fields
     if (
-      !body.billing ||
-      !body.shipping ||
-      !body.line_items ||
-      !body.payment_method
+      !orderData.billing ||
+      !orderData.shipping ||
+      !orderData.line_items ||
+      !orderData.payment_method
     ) {
       return NextResponse.json(
         { error: "Missing required order fields" },
@@ -31,15 +72,13 @@ export async function POST(req: Request) {
     // Construct WooCommerce Order API URL
     const url = `${BASE_URL}/orders?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`;
 
-    console.log("URL [place-order]", url);
-
     // Send order data to WooCommerce
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(orderData),
     });
 
     if (!response.ok) {

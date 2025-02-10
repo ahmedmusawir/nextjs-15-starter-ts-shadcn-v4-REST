@@ -31,29 +31,29 @@ const PaymentMethods = () => {
     // 2️⃣ Validate Shipping Info
     const { first_name, last_name, address_1, city, postcode, country } =
       checkoutData.shipping;
-    if (
-      !first_name ||
-      !last_name ||
-      !address_1 ||
-      !city ||
-      !postcode ||
-      !country
-    ) {
-      setError("Please complete the shipping details.");
-      return;
-    }
+    // if (
+    //   !first_name ||
+    //   !last_name ||
+    //   !address_1 ||
+    //   !city ||
+    //   !postcode ||
+    //   !country
+    // ) {
+    //   setError("Please complete the shipping details.");
+    //   return;
+    // }
 
     // 3️⃣ Validate Cart Items
-    if (checkoutData.cartItems.length === 0) {
-      setError("Your cart is empty. Add items before placing an order.");
-      return;
-    }
+    // if (checkoutData.cartItems.length === 0) {
+    //   setError("Your cart is empty. Add items before placing an order.");
+    //   return;
+    // }
 
     // 4️⃣ Validate Shipping Method
-    if (!checkoutData.shippingMethod) {
-      setError("Please select a shipping method.");
-      return;
-    }
+    // if (!checkoutData.shippingMethod) {
+    //   setError("Please select a shipping method.");
+    //   return;
+    // }
 
     // All checks passed - Log the order object for debugging
     console.log("Order Object:", checkoutData);
