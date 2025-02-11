@@ -5,6 +5,7 @@ import { debounce } from "lodash";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
 import ShippingMethods from "./ShippingMethods";
 import ShippingForm from "./ShippingForm";
+import BillingForm from "./BillingForm";
 
 // Function to retrieve shipping data from the embedded script
 const getShippingData = () => {
@@ -120,11 +121,11 @@ const ShippingInfo = () => {
         )}
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 mt-10">
+      {/* <h2 className="text-2xl font-bold text-gray-900 mt-10">
         Billing Information
-      </h2>
+      </h2> */}
       {/* Billing From w/ zod validation */}
-      {/* <BillingForm /> */}
+      <BillingForm />
     </div>
   );
 };
