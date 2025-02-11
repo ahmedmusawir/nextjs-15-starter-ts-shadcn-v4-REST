@@ -2,7 +2,7 @@ import { useCheckoutStore } from "@/store/useCheckoutStore";
 import React, { useState } from "react";
 
 const ContactEmail = () => {
-  const { checkoutData, setBilling } = useCheckoutStore();
+  const { checkoutData, setBilling, setShipping } = useCheckoutStore();
   const email = checkoutData.billing.email || "";
   const [error, setError] = useState("");
 
@@ -10,7 +10,11 @@ const ContactEmail = () => {
   const [isEditing, setIsEditing] = useState(!email);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBilling({ ...checkoutData.billing, email: e.target.value });
+    const newEmail = e.target.value;
+    // Update billing email
+    setBilling({ ...checkoutData.billing, email: newEmail });
+    // Also update shipping email so both remain in sync
+    setShipping({ ...checkoutData.shipping, email: newEmail });
   };
 
   const handleSaveEmail = () => {

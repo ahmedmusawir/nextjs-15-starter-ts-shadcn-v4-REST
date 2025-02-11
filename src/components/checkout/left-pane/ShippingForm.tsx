@@ -5,8 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
-import { StateSelect } from "react-country-state-city";
-import "react-country-state-city/dist/react-country-state-city.css";
+import dynamic from "next/dynamic";
 
 // 1. Extend the Zod schema for shipping fields, adding "state"
 const shippingSchema = z.object({
@@ -14,7 +13,11 @@ const shippingSchema = z.object({
   last_name: z.string().min(1, "Last name is required"),
   address_1: z.string().min(5, "Address is required"),
   city: z.string().min(2, "City is required"),
-  state: z.string().min(2, "State is required"),
+  // state: z.string().min(2, "State is required"),
+  state: z.preprocess(
+    (val) => (val === null ? "" : val),
+    z.string().min(2, "State is required")
+  ),
   postcode: z.string().regex(/^\d{5}$/, "Invalid ZIP code"),
   phone: z.string().regex(/^\d{10,15}$/, "Invalid phone number"),
 });
@@ -67,6 +70,11 @@ const ShippingForm = () => {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsBillingSame(e.target.checked);
   };
+
+  // Dynamically import StateSelector, disabling SSR.
+  const StateSelector = dynamic(() => import("../left-pane/StateSelector"), {
+    ssr: false,
+  });
 
   // 6. Render the form.
   return (
@@ -181,8 +189,62 @@ const ShippingForm = () => {
             name="state"
             control={control}
             render={({ field, fieldState }) => (
-              <div>
+              <>
+                <StateSelector
+                  value={field.value}
+                  onChange={(newState) => field.onChange(newState)}
+                />
+                {fieldState.error && (
+                  <p className="text-red-500 text-sm">
+                    {fieldState.error.message}
+                  </p>
+                )}
+              </>
+            )}
+          />
+        </div>
+
+        {/* <div>
+          <label
+            htmlFor="state"
+            className="block text-sm font-medium text-gray-700"
+          >
+            State
+          </label>
+          <Controller
+            name="state"
+            control={control}
+            render={({ field, fieldState }) => (
+              <>
+                <StateSelector
+                  value={field.value}
+                  onChange={(newState) => field.onChange(newState)}
+                />
+                {fieldState.error && (
+                  <p className="text-red-500 text-sm">
+                    {fieldState.error.message}
+                  </p>
+                )}
+              </>
+            )}
+          />
+        </div> */}
+
+        {/* <div>
+          <label
+            htmlFor="state"
+            className="block text-sm font-medium text-gray-700"
+          >
+            State
+          </label>
+          <Controller
+            name="state"
+            control={control}
+            // Remove the defaultValue prop here; rely on useForm’s defaultValues
+            render={({ field, fieldState }) => (
+              <>
                 <StateSelect
+                  key={field.value || "default"} // Force re-mount when field.value changes
                   countryid={233}
                   value={field.value || ""}
                   onChange={(selected) => {
@@ -195,10 +257,10 @@ const ShippingForm = () => {
                     {fieldState.error.message}
                   </p>
                 )}
-              </div>
+              </>
             )}
           />
-        </div>
+        </div> */}
 
         {/* Postal Code */}
         <div>

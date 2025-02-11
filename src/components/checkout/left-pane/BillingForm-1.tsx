@@ -8,8 +8,8 @@ import { useCheckoutStore } from "@/store/useCheckoutStore";
 import { StateSelect } from "react-country-state-city";
 import "react-country-state-city/dist/react-country-state-city.css";
 
-// 1. Extend the Zod schema for shipping fields, adding "state"
-const shippingSchema = z.object({
+// 1. Define the Zod schema for billing fields (identical to shipping):
+const billingSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
   address_1: z.string().min(5, "Address is required"),
@@ -20,10 +20,10 @@ const shippingSchema = z.object({
 });
 
 // 2. Infer the TypeScript type from the Zod schema
-type ShippingFormValues = z.infer<typeof shippingSchema>;
+type BillingFormValues = z.infer<typeof billingSchema>;
 
-const ShippingForm = () => {
-  const { checkoutData, setShipping } = useCheckoutStore();
+const BillingForm = () => {
+  const { checkoutData, setBilling } = useCheckoutStore();
 
   // 3. Use the Zod schema as the resolver for React Hook Form
   const {
@@ -31,19 +31,19 @@ const ShippingForm = () => {
     handleSubmit,
     control, // Needed for the Controller handling "state"
     formState: { errors },
-  } = useForm<ShippingFormValues>({
-    resolver: zodResolver(shippingSchema),
-    defaultValues: checkoutData.shipping,
+  } = useForm<BillingFormValues>({
+    resolver: zodResolver(billingSchema),
+    defaultValues: checkoutData.billing,
   });
 
   // 4. Submission handler updates the Zustand store with valid data
-  const onSubmit = (data: ShippingFormValues) => {
-    // Merge into existing shipping object if you have other fields like address_2, country, etc.
-    const updatedShipping = {
-      ...checkoutData.shipping,
+  const onSubmit = (data: BillingFormValues) => {
+    // Merge into existing billing object if you have other fields like address_2, country, etc.
+    const updatedBilling = {
+      ...checkoutData.billing,
       ...data,
     };
-    setShipping(updatedShipping);
+    setBilling(updatedBilling);
   };
 
   // 5. Render the form with the new StateSelect in place of a plain input
@@ -135,10 +135,9 @@ const ShippingForm = () => {
             <div>
               <StateSelect
                 countryid={233}
-                value={field.value || ""} // library expects null if empty
+                value={field.value || ""}
                 onChange={(selected) => {
                   console.log("Selected object from <StateSelect>:", selected);
-
                   const iso = (selected as any)?.state_code || "";
                   field.onChange(iso);
                 }}
@@ -200,4 +199,4 @@ const ShippingForm = () => {
   );
 };
 
-export default ShippingForm;
+export default BillingForm;

@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
 import { StateSelect } from "react-country-state-city";
 import "react-country-state-city/dist/react-country-state-city.css";
+import StateSelector from "./StateSelector";
 
 // 1. Extend the Zod schema for shipping fields, adding "state"
 const shippingSchema = z.object({
@@ -14,7 +15,6 @@ const shippingSchema = z.object({
   last_name: z.string().min(1, "Last name is required"),
   address_1: z.string().min(5, "Address is required"),
   city: z.string().min(2, "City is required"),
-  // state: z.string().optional(),
   state: z.string().min(2, "State is required"),
   postcode: z.string().regex(/^\d{5}$/, "Invalid ZIP code"),
   phone: z.string().regex(/^\d{10,15}$/, "Invalid phone number"),
@@ -30,42 +30,46 @@ const ShippingForm = () => {
   // Default to true, as requested.
   const [isBillingSame, setIsBillingSame] = useState(true);
 
-  // 3. Use the Zod schema as the resolver for React Hook Form
+  // 3. Use the Zod schema as the resolver for React Hook Form.
+  //    Destructure "reset" so we can update the form when checkoutData.shipping changes.
   const {
     register,
     handleSubmit,
-    control, // Needed for the Controller handling "state"
+    control,
+    reset,
     formState: { errors },
   } = useForm<ShippingFormValues>({
     resolver: zodResolver(shippingSchema),
     defaultValues: checkoutData.shipping,
   });
 
-  // 4. Submission handler updates the Zustand store with valid data
+  // 3.1. Whenever checkoutData.shipping updates (e.g., on mount or after Save),
+  //      reset the form with the latest values.
+  useEffect(() => {
+    reset(checkoutData.shipping);
+  }, [checkoutData.shipping, reset]);
+
+  // 4. Submission handler updates the Zustand store with valid data.
   const onSubmit = (data: ShippingFormValues) => {
-    // Merge into existing shipping object if you have other fields like address_2, country, etc.
+    // Merge into existing shipping object (in case there are extra fields).
     const updatedShipping = {
       ...checkoutData.shipping,
       ...data,
     };
     setShipping(updatedShipping);
 
-    // If the checkbox is checked, copy shipping data to billing
+    // If the "billing same as shipping" checkbox is checked, update billing as well.
     if (isBillingSame) {
       setBilling(updatedShipping);
     }
   };
 
-  // 5. Handle changes to the "Billing same as shipping" checkbox
+  // 5. Handle changes to the "Billing same as shipping" checkbox.
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsBillingSame(e.target.checked);
-    if (e.target.checked) {
-      // Copy existing shipping data to billing right away
-      setBilling(checkoutData.shipping);
-    }
   };
 
-  // 6. Render the form
+  // 6. Render the form.
   return (
     <div className="mt-4">
       {/* Display Country/Region: USA on top (not part of the form) */}
@@ -178,15 +182,39 @@ const ShippingForm = () => {
             name="state"
             control={control}
             render={({ field, fieldState }) => (
-              <div>
+              <>
+                <StateSelector
+                  value={field.value}
+                  onChange={(newState) => field.onChange(newState)}
+                />
+                {fieldState.error && (
+                  <p className="text-red-500 text-sm">
+                    {fieldState.error.message}
+                  </p>
+                )}
+              </>
+            )}
+          />
+        </div>
+
+        {/* <div>
+          <label
+            htmlFor="state"
+            className="block text-sm font-medium text-gray-700"
+          >
+            State
+          </label>
+          <Controller
+            name="state"
+            control={control}
+            // Remove the defaultValue prop here; rely on useForm’s defaultValues
+            render={({ field, fieldState }) => (
+              <>
                 <StateSelect
+                  key={field.value || "default"} // Force re-mount when field.value changes
                   countryid={233}
                   value={field.value || ""}
                   onChange={(selected) => {
-                    console.log(
-                      "Selected object from <StateSelect>:",
-                      selected
-                    );
                     const iso = (selected as any)?.state_code || "";
                     field.onChange(iso);
                   }}
@@ -196,10 +224,10 @@ const ShippingForm = () => {
                     {fieldState.error.message}
                   </p>
                 )}
-              </div>
+              </>
             )}
           />
-        </div>
+        </div> */}
 
         {/* Postal Code */}
         <div>
