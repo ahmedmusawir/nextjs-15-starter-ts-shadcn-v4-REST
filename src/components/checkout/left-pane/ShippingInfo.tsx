@@ -5,7 +5,6 @@ import { debounce } from "lodash";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
 import ShippingMethods from "./ShippingMethods";
 import ShippingForm from "./ShippingForm";
-import BillingForm from "./BillingForm";
 
 // Function to retrieve shipping data from the embedded script
 const getShippingData = () => {

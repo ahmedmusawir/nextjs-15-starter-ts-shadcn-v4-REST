@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,46 +29,45 @@ const ShippingForm = () => {
   // Default to true, as requested.
   const [isBillingSame, setIsBillingSame] = useState(true);
 
-  // 3. Use the Zod schema as the resolver for React Hook Form.
-  //    Destructure "reset" so we can update the form when checkoutData.shipping changes.
+  // 3. Use the Zod schema as the resolver for React Hook Form
   const {
     register,
     handleSubmit,
-    control,
-    reset,
+    control, // Needed for the Controller handling "state"
     formState: { errors },
   } = useForm<ShippingFormValues>({
     resolver: zodResolver(shippingSchema),
     defaultValues: checkoutData.shipping,
   });
 
-  // 3.1. Whenever checkoutData.shipping updates (e.g., on mount or after Save),
-  //      reset the form with the latest values.
-  useEffect(() => {
-    reset(checkoutData.shipping);
-  }, [checkoutData.shipping, reset]);
-
-  // 4. Submission handler updates the Zustand store with valid data.
+  // 4. Submission handler updates the Zustand store with valid data
   const onSubmit = (data: ShippingFormValues) => {
-    // Merge into existing shipping object (in case there are extra fields).
+    // Merge into existing shipping object if you have other fields like address_2, country, etc.
     const updatedShipping = {
       ...checkoutData.shipping,
       ...data,
     };
     setShipping(updatedShipping);
 
-    // If the "billing same as shipping" checkbox is checked, update billing as well.
+    // If the checkbox is checked, copy shipping data to billing
     if (isBillingSame) {
       setBilling(updatedShipping);
     }
   };
 
-  // 5. Handle changes to the "Billing same as shipping" checkbox.
+  // 5. Handle changes to the "Billing same as shipping" checkbox
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsBillingSame(e.target.checked);
   };
+  // const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setIsBillingSame(e.target.checked);
+  //   if (e.target.checked) {
+  //     // Copy existing shipping data to billing right away
+  //     setBilling(checkoutData.shipping);
+  //   }
+  // };
 
-  // 6. Render the form.
+  // 6. Render the form
   return (
     <div className="mt-4">
       {/* Display Country/Region: USA on top (not part of the form) */}
@@ -85,7 +84,7 @@ const ShippingForm = () => {
           id="billing-same-checkbox"
           type="checkbox"
           checked={isBillingSame}
-          onChange={handleCheckboxChange}
+          // onChange={handleCheckboxChange}
           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
         />
         <label
@@ -186,6 +185,10 @@ const ShippingForm = () => {
                   countryid={233}
                   value={field.value || ""}
                   onChange={(selected) => {
+                    console.log(
+                      "Selected object from <StateSelect>:",
+                      selected
+                    );
                     const iso = (selected as any)?.state_code || "";
                     field.onChange(iso);
                   }}
