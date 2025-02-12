@@ -24,7 +24,7 @@ const ThankyouPageContent = () => {
         <div className="h-80 overflow-hidden lg:absolute lg:h-full lg:w-1/2 lg:pr-4 xl:pr-12">
           <img
             alt="TODO"
-            src="https://tailwindui.com/plus/img/ecommerce-images/confirmation-page-06-hero.jpg"
+            src="https://res.cloudinary.com/dyb0qa58h/image/upload/v1693546210/39483523_wtpocj.webp"
             className="size-full object-cover"
           />
         </div>

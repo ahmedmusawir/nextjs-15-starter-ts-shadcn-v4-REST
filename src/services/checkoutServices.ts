@@ -251,6 +251,7 @@ export const fetchShippingZones = async (): Promise<any[]> => {
  * ```
  */
 import { WOOCOM_REST_GET_SHIPPING_METHODS_BY_ZONE } from "@/rest-api/checkout";
+import { CheckoutData } from "@/types/checkout";
 import { Coupon } from "@/types/coupon";
 import { OrderPayload } from "@/types/order";
 
@@ -288,10 +289,10 @@ export const fetchShippingMethodsByZone = async (
  * @param order - The order payload containing billing, shipping, line items, shipping lines, and coupon lines.
  * @returns A promise that resolves to the WooCommerce order data on success, or null if the submission fails.
  */
-export const createWoocomOrder = async (order: OrderPayload): Promise<any> => {
+export const createWoocomOrder = async (order: CheckoutData): Promise<any> => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/place-order/route`,
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/place-order`,
       {
         method: "POST",
         headers: {

@@ -1,61 +1,62 @@
+"use client";
+
 import { useCheckoutStore } from "@/store/useCheckoutStore";
-import { useState } from "react"; // Add State to Manage Errors
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react"; // Add state to manage errors
 
 const PaymentMethods = () => {
+  const router = useRouter();
+  const isHydrated = useCheckoutStore(
+    (state) => (state as any)._persist?.rehydrated
+  );
+
   const paymentMethods = [
     { id: "credit-card", title: "Credit card" },
     { id: "paypal", title: "PayPal" },
     { id: "etransfer", title: "eTransfer" },
   ];
-  // Add This Below the Payment Form (At The End)
   const { checkoutData } = useCheckoutStore();
   const [error, setError] = useState("");
 
-  // console.log("Country[PaymentMethod.tsx]", checkoutData);
+  // Redirect to /shop if cart is empty
+  useEffect(() => {
+    if (isHydrated && checkoutData.cartItems.length === 0) {
+      router.push("/shop");
+    }
+  }, [isHydrated, checkoutData.cartItems, router]);
 
-  // Ensure country is set before validation
-  // if (!checkoutData.shipping.country) {
-  //   checkoutData.shipping.country = "USA"; // Set default country
-  // }
-
-  // Function to Validate Checkout Before Placing Order
+  // Function to validate checkout before placing order.
   const handlePlaceOrder = () => {
     setError(""); // Reset previous errors
 
-    // 1️⃣ Validate Email
+    // 1️. Validate Billing Email
     if (!checkoutData.billing.email.trim()) {
       setError("Please enter a valid email address.");
       return;
     }
 
-    // 2️⃣ Validate Shipping Info
+    // 2️. Validate Shipping Info (uncomment if you want to enforce shipping details)
     const { first_name, last_name, address_1, city, postcode, country } =
       checkoutData.shipping;
-    // if (
-    //   !first_name ||
-    //   !last_name ||
-    //   !address_1 ||
-    //   !city ||
-    //   !postcode ||
-    //   !country
-    // ) {
-    //   setError("Please complete the shipping details.");
-    //   return;
-    // }
+    if (
+      !first_name ||
+      !last_name ||
+      !address_1 ||
+      !city ||
+      !postcode ||
+      !country
+    ) {
+      setError("Please complete the shipping details.");
+      return;
+    }
 
-    // 3️⃣ Validate Cart Items
-    // if (checkoutData.cartItems.length === 0) {
-    //   setError("Your cart is empty. Add items before placing an order.");
-    //   return;
-    // }
+    // 3. Validate Shipping Method (uncomment if needed)
+    if (!checkoutData.shippingMethod) {
+      setError("Please select a shipping method.");
+      return;
+    }
 
-    // 4️⃣ Validate Shipping Method
-    // if (!checkoutData.shippingMethod) {
-    //   setError("Please select a shipping method.");
-    //   return;
-    // }
-
-    // All checks passed - Log the order object for debugging
+    // All validations passed – log the order object for debugging
     console.log("Order Object:", checkoutData);
   };
 
@@ -84,7 +85,8 @@ const PaymentMethods = () => {
           ))}
         </div>
       </fieldset>
-      {/* PAYMENT FORM      */}
+
+      {/* PAYMENT FORM */}
       <div className="mt-6 grid grid-cols-4 gap-x-4 gap-y-6">
         <div className="col-span-4">
           <label
@@ -158,6 +160,7 @@ const PaymentMethods = () => {
           </div>
         </div>
       </div>
+
       <div className="mt-6">
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
         <button
