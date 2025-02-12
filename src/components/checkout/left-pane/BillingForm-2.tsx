@@ -1,4 +1,3 @@
-// File: BillingForm.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -34,20 +33,16 @@ const billingSchema = z.object({
 type BillingFormValues = z.infer<typeof billingSchema>;
 
 const BillingForm = () => {
-  // Destructure the global store values, including our new flag.
-  const { checkoutData, setBilling, billingSameAsShipping } =
+  const { checkoutData, billingSameAsShipping, setBilling } =
     useCheckoutStore();
 
-  // Local state to track if the billing form is in edit mode.
-  // Default to false because when billingSameAsShipping is true we want a closed display.
+  // Determine if we should start in edit mode.
+  // For example, if the billing info is empty (say, first_name is not set) then we default to edit mode.
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  // Optional: If billing is not the same as shipping and billing info is missing, open the form.
-  useEffect(() => {
-    if (!billingSameAsShipping && !checkoutData.billing.first_name) {
-      setIsEditing(true);
-    }
-  }, [billingSameAsShipping, checkoutData.billing.first_name]);
+  // const [isEditing, setIsEditing] = useState<boolean>(
+  //   !checkoutData.billing.first_name
+  // );
 
   // Set up React Hook Form.
   const {
@@ -71,25 +66,10 @@ const BillingForm = () => {
     const updatedBilling = { ...checkoutData.billing, ...data };
     setBilling(updatedBilling);
     setIsEditing(false);
-    // Optionally, if you want to also update the shipping checkbox,
-    // that logic can be added elsewhere.
+    // Optionally, if you have a mechanism to uncheck "Same as Shipping" in the Shipping form,
+    // call that logic here.
   };
 
-  // When billingSameAsShipping is true, we show a closed view with "Same as Shipping".
-  if (billingSameAsShipping) {
-    return (
-      <div className="mt-4">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Billing Information
-        </h2>
-        <div className="mt-4 border p-4 rounded-md">
-          <p className="text-gray-700">Same as Shipping</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Otherwise, show either the display view or the edit form.
   return (
     <div className="mt-4">
       <h2 className="text-2xl font-bold text-gray-900">Billing Information</h2>
@@ -111,8 +91,9 @@ const BillingForm = () => {
                 {checkoutData.billing.postcode}
               </p>
               <p className="text-gray-700">{checkoutData.billing.phone}</p>
-              {/* For clarity, you could conditionally show "Same as Shipping" only if appropriate.
-                  Here, since billingSameAsShipping is false, we assume a different billing address. */}
+              {/* Show "Same as Shipping" if billing matches shipping.
+                  For simplicity, you might compare a key field here. */}
+              <p className="text-gray-700 mt-2">Same as Shipping</p>
             </>
           ) : (
             <p className="text-gray-700">No billing info provided.</p>

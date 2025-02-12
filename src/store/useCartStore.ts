@@ -131,14 +131,6 @@ export const useCartStore = create<CartStore>()(
             .toFixed(2)
         );
       },
-
-      // calculateSubtotal: () => {
-      //   return parseFloat(
-      //     get()
-      //       .cartItems.reduce((total, item) => total + item.price, 0)
-      //       .toFixed(2)
-      //   );
-      // },
     }),
     {
       name: "cart-storage",

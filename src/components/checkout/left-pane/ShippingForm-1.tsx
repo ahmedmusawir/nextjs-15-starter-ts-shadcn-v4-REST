@@ -26,13 +26,15 @@ const shippingSchema = z.object({
 type ShippingFormValues = z.infer<typeof shippingSchema>;
 
 const ShippingForm = () => {
-  const {
-    checkoutData,
-    setShipping,
-    setBilling,
-    billingSameAsShipping,
-    setBillingSameAsShipping,
-  } = useCheckoutStore();
+  const { checkoutData, setShipping, setBilling } = useCheckoutStore();
+
+  // We'll track "same as shipping" in local state for simplicity.
+  // Default to true, as requested.
+  const [isBillingSame, setIsBillingSame] = useState(true);
+
+  // Use the global flag for "billing same as shipping" from the store.
+  const { billingSameAsShipping, setBillingSameAsShipping } =
+    useCheckoutStore();
 
   // 3. Use the Zod schema as the resolver for React Hook Form.
   //    Destructure "reset" so we can update the form when checkoutData.shipping changes.
@@ -63,24 +65,15 @@ const ShippingForm = () => {
     setShipping(updatedShipping);
 
     // If the "billing same as shipping" checkbox is checked, update billing as well.
-    if (billingSameAsShipping) {
+    if (isBillingSame) {
       setBilling(updatedShipping);
     }
   };
 
   // 5. Handle changes to the "Billing same as shipping" checkbox.
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVal = e.target.checked;
-    setBillingSameAsShipping(newVal);
-    if (newVal) {
-      // Immediately copy the current shipping data into billing.
-      setBilling(checkoutData.shipping);
-    }
+    setIsBillingSame(e.target.checked);
   };
-
-  // const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setBillingSameAsShipping(e.target.checked);
-  // };
 
   // Dynamically import StateSelector, disabling SSR.
   const StateSelector = dynamic(() => import("../left-pane/StateSelector"), {
@@ -103,7 +96,7 @@ const ShippingForm = () => {
         <input
           id="billing-same-checkbox"
           type="checkbox"
-          checked={billingSameAsShipping}
+          checked={isBillingSame}
           onChange={handleCheckboxChange}
           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
         />

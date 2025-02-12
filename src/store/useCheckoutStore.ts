@@ -23,13 +23,15 @@ interface CheckoutStore {
   calculateTotals: () => void;
   resetCheckout: () => void;
   applyCoupon: (coupon: Coupon) => void;
-  // applyCoupon: (coupon: CheckoutData["coupon"]) => void;
   removeCoupon: () => void;
+  billingSameAsShipping: boolean; // Default: billing is same as shipping
+  setBillingSameAsShipping: (value: boolean) => void;
 }
 
 export const useCheckoutStore = create<CheckoutStore>()(
   persist(
     (set, get) => ({
+      billingSameAsShipping: true, // Default: billing is same as shipping
       checkoutData: {
         billing: {
           first_name: "",
@@ -65,6 +67,9 @@ export const useCheckoutStore = create<CheckoutStore>()(
         discountTotal: 0,
         total: 0,
       },
+
+      setBillingSameAsShipping: (value: boolean) =>
+        set(() => ({ billingSameAsShipping: value })),
 
       // Set Billing Address
       setBilling: (billing) =>
@@ -251,7 +256,10 @@ export const useCheckoutStore = create<CheckoutStore>()(
     {
       name: "checkout-storage",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ checkoutData: state.checkoutData }),
+      partialize: (state) => ({
+        checkoutData: state.checkoutData,
+        billingSameAsShipping: state.billingSameAsShipping,
+      }),
     }
   )
 );
