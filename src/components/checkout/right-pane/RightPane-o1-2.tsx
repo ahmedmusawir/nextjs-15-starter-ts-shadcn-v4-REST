@@ -38,11 +38,21 @@ const RightPane = () => {
     }
   }, [cartItems, setCartItems, calculateTotals]);
 
-  // ------------- MAIN LOGIC FOR SUBTOTAL CHECK -------------
+  // --- MAIN LOGIC FOR SUBTOTAL CHECK ---
   const [couponMessage, setCouponMessage] = useState("");
   const prevSubtotalRef = useRef(checkoutData.subtotal);
 
+  // This ref tracks whether we've already run the effect once, so we skip on first render
+  const hasMountedRef = useRef(false);
+
   useEffect(() => {
+    // Skip the logic on the very first render (e.g., page refresh)
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      prevSubtotalRef.current = checkoutData.subtotal;
+      return;
+    }
+
     const oldSubtotal = prevSubtotalRef.current;
     const newSubtotal = checkoutData.subtotal;
 
@@ -63,8 +73,7 @@ const RightPane = () => {
     // Update the ref
     prevSubtotalRef.current = newSubtotal;
   }, [checkoutData.coupon, checkoutData.subtotal]);
-
-  // ---------------------------------------------------------
+  // -------------------------------------
 
   const shipping = checkoutData.shippingCost || 0;
   const total = checkoutData.total;
@@ -94,6 +103,7 @@ const RightPane = () => {
             </dd>
           </div>
 
+          {/* If a coupon is currently applied, display its info */}
           {checkoutData.coupon && (
             <div className="flex flex-col text-green-600">
               <div className="flex items-center justify-between">

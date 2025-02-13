@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import Spinner from "@/components/common/Spinner";
+import Link from "next/link";
+import React, { useRef } from "react";
+import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
-import Spinner from "@/components/common/Spinner";
 import CheckoutCartItems from "./CheckoutCartItems";
 import ApplyCoupon from "./ApplyCoupon";
 
@@ -14,15 +16,11 @@ const RightPane = () => {
     isLoading,
     setIsCartOpen,
   } = useCartStore();
-
   const { checkoutData, setCartItems, calculateTotals } = useCheckoutStore();
 
-  // Hide any side-cart on mount
-  useEffect(() => {
-    setIsCartOpen(false);
-  }, [setIsCartOpen]);
+  // console.log("Checkout Data [RightPane]", checkoutData);
 
-  // If checkout store has no cart items, but our cart store does, sync them
+  // Sync cart data with checkout store
   useEffect(() => {
     if (checkoutData.cartItems.length === 0 && cartItems.length > 0) {
       setCartItems(cartItems);
@@ -30,56 +28,63 @@ const RightPane = () => {
     }
   }, [cartItems, checkoutData.cartItems.length, setCartItems, calculateTotals]);
 
-  // Always keep store updated on each cart change
+  const cartData =
+    checkoutData.cartItems.length > 0 ? checkoutData.cartItems : cartItems;
+
+  // Closes the sidebar Cart Slide
+  useEffect(() => {
+    setIsCartOpen(false);
+  }, [setIsCartOpen]); // This runs once when the component mounts
+
+  // Sync cart data with checkout store and keep it updated
   useEffect(() => {
     if (cartItems.length > 0) {
-      setCartItems(cartItems);
+      setCartItems(cartItems); // Always update checkout cart items
       calculateTotals();
     }
   }, [cartItems, setCartItems, calculateTotals]);
 
-  // ------------- MAIN LOGIC FOR SUBTOTAL CHECK -------------
+  // Remove Coupon after any Cart Update
+
+  const prevCartStringRef = useRef(JSON.stringify(cartItems));
   const [couponMessage, setCouponMessage] = useState("");
-  const prevSubtotalRef = useRef(checkoutData.subtotal);
 
   useEffect(() => {
-    const oldSubtotal = prevSubtotalRef.current;
-    const newSubtotal = checkoutData.subtotal;
+    // Convert to string for comparison
+    const newCartString = JSON.stringify(cartItems);
 
-    console.log("RightPane effect -> old:", oldSubtotal, " new:", newSubtotal);
-
-    // If a coupon is applied & the subtotal changed, show a message
-    if (checkoutData.coupon && newSubtotal !== oldSubtotal) {
-      console.log("Subtotal changed, showing coupon message");
-      setCouponMessage(
-        "Your cart changed, you may need to re-apply the coupon."
-      );
-    } else {
-      // If no coupon or the subtotal didn't change, clear the message
-      console.log("Subtotal not changed or no coupon, clearing message");
-      setCouponMessage("");
+    // If the coupon is applied and the cart changed in any way
+    if (checkoutData.coupon && newCartString !== prevCartStringRef.current) {
+      useCheckoutStore.getState().removeCoupon();
+      setCouponMessage("Cart updated, please re-apply the coupon.");
     }
 
+    console.log("Testing useEffect in [RightPane.tsx] on cart change");
     // Update the ref
-    prevSubtotalRef.current = newSubtotal;
-  }, [checkoutData.coupon, checkoutData.subtotal]);
-
-  // ---------------------------------------------------------
+    prevCartStringRef.current = newCartString;
+  }, [cartItems, checkoutData.coupon]);
 
   const shipping = checkoutData.shippingCost || 0;
   const total = checkoutData.total;
 
+  // Makes sure Zustand states are loaded
   if (isLoading) {
-    return <Spinner />;
+    return (
+      <div>
+        <Spinner />
+      </div>
+    );
   }
-
   return (
     <div className="mt-10 lg:mt-0">
       <h2 className="text-2xl text-gray-900">Order summary</h2>
+      {isLoading && <Spinner />}
 
       <div className="mt-4 rounded-lg border border-gray-200 bg-white shadow-sm">
-        <CheckoutCartItems cartData={checkoutData.cartItems} />
+        {/* CART ITMES DISPLAY COMPONENT */}
+        <CheckoutCartItems cartData={cartData} />
 
+        {/* SUBTOTAL, SHIPPING & TOTAL CACULATION */}
         <dl className="space-y-6 border-t border-gray-200 px-4 py-6 sm:px-6">
           <div className="flex items-center justify-between">
             <dt className="text-sm">Subtotal</dt>
@@ -94,6 +99,7 @@ const RightPane = () => {
             </dd>
           </div>
 
+          {/* Coupon Discount */}
           {checkoutData.coupon && (
             <div className="flex flex-col text-green-600">
               <div className="flex items-center justify-between">
@@ -104,6 +110,7 @@ const RightPane = () => {
                   -${checkoutData.discountTotal.toFixed(2)}
                 </dd>
               </div>
+              {/* Small text for coupon description */}
               {checkoutData.coupon.description && (
                 <p className="text-xs text-gray-500">
                   {checkoutData.coupon.description}
@@ -112,16 +119,12 @@ const RightPane = () => {
             </div>
           )}
 
-          {/* The coupon input block */}
+          {/* THE APPLY COUPON BLOCK */}
           <ApplyCoupon />
-
-          {/* If the subtotal changed while a coupon was active, show our message */}
-          {couponMessage && (
-            <p className="mt-1 text-sm font-bold text-red-600">
-              {couponMessage}
-            </p>
-          )}
-
+          <h4>
+            Coupon Message:{" "}
+            <span className="text-red-500">{couponMessage}</span>
+          </h4>
           <div className="flex items-center justify-between border-t border-gray-200 pt-6">
             <dt className="text-base font-medium">Total</dt>
             <dd className="text-base font-medium text-gray-900">
