@@ -1,5 +1,6 @@
 "use client";
 
+import { createWoocomOrder } from "@/services/checkoutServices";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react"; // Add state to manage errors
@@ -17,6 +18,7 @@ const PaymentMethods = () => {
   ];
   const { checkoutData } = useCheckoutStore();
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect to /shop if cart is empty
   useEffect(() => {
@@ -25,17 +27,17 @@ const PaymentMethods = () => {
     }
   }, [isHydrated, checkoutData.cartItems, router]);
 
-  // Function to validate checkout before placing order.
-  const handlePlaceOrder = () => {
+  // Function to validate checkout and place the order.
+  const handlePlaceOrder = async () => {
     setError(""); // Reset previous errors
 
-    // 1️. Validate Billing Email
+    // 1️⃣ Validate Billing Email
     if (!checkoutData.billing.email.trim()) {
       setError("Please enter a valid email address.");
       return;
     }
 
-    // 2️. Validate Shipping Info (uncomment if you want to enforce shipping details)
+    // 2️⃣ Validate Shipping Info
     const { first_name, last_name, address_1, city, postcode, country } =
       checkoutData.shipping;
     if (
@@ -50,14 +52,29 @@ const PaymentMethods = () => {
       return;
     }
 
-    // 3. Validate Shipping Method (uncomment if needed)
+    // 3️⃣ Validate Shipping Method
     if (!checkoutData.shippingMethod) {
       setError("Please select a shipping method.");
       return;
     }
 
-    // All validations passed – log the order object for debugging
-    console.log("Order Object:", checkoutData);
+    // All validations passed – call the service function
+    setIsSubmitting(true);
+    try {
+      const orderResponse = await createWoocomOrder(checkoutData);
+      if (!orderResponse) {
+        setError("Order submission failed. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+      console.log("Order submission successful:", orderResponse);
+      // Optionally, redirect to an order confirmation page
+      router.push("/thankyou");
+    } catch (err) {
+      console.error("Error submitting order:", err);
+      setError("Order submission encountered an error. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   return (

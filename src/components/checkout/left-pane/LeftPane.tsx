@@ -4,10 +4,14 @@ import React, { useState } from "react";
 import ContactEmail from "./ContactEmail";
 import ShippingInfo from "./ShippingInfo";
 import PaymentMethods from "./PaymentMethods";
+import OrderValidation from "./OrderValidation";
 
 const LeftPane = () => {
   return (
     <div>
+      {/* OrderValidation runs its useEffect to monitor checkoutData and update orderValidated */}
+      <OrderValidation />
+
       <div className="mt-10">
         <h1 className="text-2xl text-gray-900">Contact information</h1>
 

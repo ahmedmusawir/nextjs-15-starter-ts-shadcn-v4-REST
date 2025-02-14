@@ -6,6 +6,7 @@ import { useCheckoutStore } from "@/store/useCheckoutStore";
 import Spinner from "@/components/common/Spinner";
 import CheckoutCartItems from "./CheckoutCartItems";
 import ApplyCoupon from "./ApplyCoupon";
+import { useRouter } from "next/navigation";
 
 const RightPane = () => {
   const {
@@ -16,26 +17,17 @@ const RightPane = () => {
   } = useCartStore();
 
   const { checkoutData, setCartItems, calculateTotals } = useCheckoutStore();
+  const router = useRouter();
 
   // Hide any side-cart on mount
   useEffect(() => {
     setIsCartOpen(false);
   }, [setIsCartOpen]);
 
-  // If checkout store has no cart items, but our cart store does, sync them
+  // IMPORTANT: Keep the checkout store always in sync with the cart store
   useEffect(() => {
-    if (checkoutData.cartItems.length === 0 && cartItems.length > 0) {
-      setCartItems(cartItems);
-      calculateTotals();
-    }
-  }, [cartItems, checkoutData.cartItems.length, setCartItems, calculateTotals]);
-
-  // Always keep store updated on each cart change
-  useEffect(() => {
-    if (cartItems.length > 0) {
-      setCartItems(cartItems);
-      calculateTotals();
-    }
+    setCartItems(cartItems); // Overwrite checkoutData.cartItems with cartItems
+    calculateTotals(); // Recalculate totals
   }, [cartItems, setCartItems, calculateTotals]);
 
   // ------------- MAIN LOGIC FOR SUBTOTAL CHECK -------------

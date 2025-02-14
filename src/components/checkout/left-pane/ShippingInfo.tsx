@@ -121,9 +121,6 @@ const ShippingInfo = () => {
         )}
       </div>
 
-      {/* <h2 className="text-2xl font-bold text-gray-900 mt-10">
-        Billing Information
-      </h2> */}
       {/* Billing From w/ zod validation */}
       <BillingForm />
     </div>

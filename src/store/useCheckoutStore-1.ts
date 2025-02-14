@@ -1,9 +1,7 @@
 import { create } from "zustand";
 import { CheckoutData } from "@/types/checkout";
 import { CartItem } from "@/types/cart";
-import { persist, createJSONStorage, PersistOptions } from "zustand/middleware";
-import type { StateCreator } from "zustand";
-
+import { persist, createJSONStorage } from "zustand/middleware";
 import {
   applyCoupon,
   calculateCouponDiscount,
@@ -31,11 +29,6 @@ interface CheckoutStore {
   orderValidated: boolean; // NEW: Tracks if order details are complete/validated
   setOrderValidated: (value: boolean) => void; // NEW: Function to update the orderValidated flag
 }
-
-type CheckoutPersist = (
-  config: StateCreator<CheckoutStore>,
-  options: PersistOptions<CheckoutStore>
-) => StateCreator<CheckoutStore>;
 
 export const useCheckoutStore = create<CheckoutStore>()(
   persist(
@@ -277,6 +270,3 @@ export const useCheckoutStore = create<CheckoutStore>()(
     }
   )
 );
-
-// Export the persist object for onFinishHydration usage
-export const checkoutStorePersist = (useCheckoutStore as any).persist;
