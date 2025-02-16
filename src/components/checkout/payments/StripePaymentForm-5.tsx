@@ -7,7 +7,6 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import type { PaymentIntent } from "@stripe/stripe-js";
-import { useCheckoutStore } from "@/store/useCheckoutStore";
 
 const StripePaymentForm = () => {
   const stripe = useStripe();
@@ -15,11 +14,6 @@ const StripePaymentForm = () => {
 
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  // READ CHECKOUT DATA (e.g. total) FROM THE STORE
-  const { checkoutData } = useCheckoutStore();
-  // Convert the total (e.g. $50.00) to cents (5000).
-  const totalInCents = Math.round(checkoutData.total * 100);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +37,7 @@ const StripePaymentForm = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         // pass real order data here
-        amount: totalInCents,
+        amount: 5000,
         currency: "usd",
       }),
     });

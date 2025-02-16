@@ -16,7 +16,7 @@ const PaymentMethods = () => {
   return (
     <>
       {/* Payment Methods Options (if needed, you might want to leave these always visible or conditionally render them) */}
-      <fieldset className="my-10">
+      {/* <fieldset className="my-10">
         <legend className="sr-only">Payment type</legend>
         <div className="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
           {[
@@ -41,7 +41,7 @@ const PaymentMethods = () => {
             </div>
           ))}
         </div>
-      </fieldset>
+      </fieldset> */}
 
       {/* Conditional Rendering: Payment Form is only shown if orderValidated is true */}
       {orderValidated ? (

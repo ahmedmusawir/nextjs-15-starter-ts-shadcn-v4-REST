@@ -7,7 +7,6 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import type { PaymentIntent } from "@stripe/stripe-js";
-import { useCheckoutStore } from "@/store/useCheckoutStore";
 
 const StripePaymentForm = () => {
   const stripe = useStripe();
@@ -16,11 +15,6 @@ const StripePaymentForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // READ CHECKOUT DATA (e.g. total) FROM THE STORE
-  const { checkoutData } = useCheckoutStore();
-  // Convert the total (e.g. $50.00) to cents (5000).
-  const totalInCents = Math.round(checkoutData.total * 100);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;
@@ -28,33 +22,22 @@ const StripePaymentForm = () => {
     setIsProcessing(true);
     setError(null);
 
-    // 1. First, submit the Payment Element to trigger inline validation
-    const submitResult = await elements.submit();
-    if (submitResult.error) {
-      // Provide a fallback if message is undefined
-      setError(submitResult.error.message ?? "Validation error");
-      setIsProcessing(false);
-      return;
-    }
-
-    // 2. If no validation error, fetch the PaymentIntent client secret
+    // Fetch PaymentIntent client secret from your API endpoint.
     const response = await fetch("/api/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        // pass real order data here
-        amount: totalInCents,
-        currency: "usd",
+        /* pass order details if needed */
       }),
     });
     const { clientSecret } = await response.json();
 
-    // 3. Now confirm payment with the Payment Element
+    // Confirm payment using the Payment Element.
     const result = await stripe.confirmPayment({
       elements,
       clientSecret,
       confirmParams: {
-        return_url: "http://localhost:3000/thankyou",
+        return_url: "/checkout-success",
       },
     });
 
@@ -64,11 +47,12 @@ const StripePaymentForm = () => {
       return;
     }
 
+    // Use a type guard and assertion to access paymentIntent properly.
     if ("paymentIntent" in result && result.paymentIntent) {
       const paymentIntent = result.paymentIntent as PaymentIntent;
       if (paymentIntent.status === "succeeded") {
         console.log("Payment succeeded:", paymentIntent);
-        // Next steps: create your WooCommerce order, clear cart, redirect, etc.
+        // Further actions: create order, clear cart, redirect, etc.
       }
     }
 
@@ -77,7 +61,7 @@ const StripePaymentForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-      {/* Payment Element */}
+      {/* Payment Element provides a unified payment UI */}
       <div className="border border-gray-300 rounded p-3">
         <PaymentElement />
       </div>
