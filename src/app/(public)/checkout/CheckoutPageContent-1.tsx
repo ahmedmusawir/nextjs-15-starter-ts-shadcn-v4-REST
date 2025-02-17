@@ -9,49 +9,64 @@ import Spinner from "@/components/common/Spinner";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
-const PUBLIC_KEY =
-  "pk_test_51H4FFfGUMnNXbOx0cnb8RA8ATK5Yp7s2r57OPFmCNGB2Qp9i9YJcst9917gA87mbMp5qmzRjgFbYadb9yU4o6VJy001SyNmKJJ";
-
-// Create a Stripe instance using your publishable key
-const stripePromise = loadStripe(PUBLIC_KEY);
+// Load Stripe using your publishable key (exposed with NEXT_PUBLIC_ prefix)
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 const CheckoutPageContent = () => {
   const router = useRouter();
-  // Directly read cartItems from the cart store
   const cartItems = useCartStore((state) => state.cartItems);
-
-  // We'll do the simplest approach: local "mounted" state
   const [mounted, setMounted] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string>("");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // **Use a separate useEffect** to handle the redirect once mounted
   useEffect(() => {
-    if (!mounted) return; // Wait until we're mounted
-    if (cartItems.length === 0) {
+    if (mounted && cartItems.length === 0) {
       router.push("/shop");
     }
   }, [mounted, cartItems, router]);
 
-  if (!mounted) {
-    // We haven't mounted yet—just show nothing or a spinner
-    return <Spinner />;
-  }
+  // Fetch PaymentIntent client secret from your API endpoint
+  useEffect(() => {
+    const fetchClientSecret = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:3000/api/create-payment-intent",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              amount: 50, // $0.50 in cents
+              currency: "usd",
+            }),
+          }
+        );
+        const data = await response.json();
+        setClientSecret(data.clientSecret);
+      } catch (error) {
+        console.error("Error fetching client secret:", error);
+      }
+    };
 
-  // Otherwise, render the normal checkout page
+    fetchClientSecret();
+  }, []);
+
+  if (!mounted) return <Spinner />;
+  if (!clientSecret) return <Spinner />;
+
   return (
-    <Elements stripe={stripePromise}>
+    <Elements stripe={stripePromise} options={{ clientSecret }}>
       <div className="bg-gray-50">
         <main className="mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:max-w-none">
             <h1>Checkout</h1>
             <section className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
-              <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <LeftPane />
-                <RightPane />
-              </Elements>
+              <LeftPane />
+              <RightPane />
             </section>
           </div>
         </main>

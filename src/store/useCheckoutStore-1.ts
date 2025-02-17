@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { CheckoutData } from "@/types/checkout";
 import { CartItem } from "@/types/cart";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist, createJSONStorage, PersistOptions } from "zustand/middleware";
+import type { StateCreator } from "zustand";
+
 import {
   applyCoupon,
   calculateCouponDiscount,
@@ -28,11 +30,20 @@ interface CheckoutStore {
   setBillingSameAsShipping: (value: boolean) => void;
   orderValidated: boolean; // NEW: Tracks if order details are complete/validated
   setOrderValidated: (value: boolean) => void; // NEW: Function to update the orderValidated flag
+  paymentIntentClientSecret: string; // NEW: Stores the PaymentIntent client secret
+  setPaymentIntentClientSecret: (clientSecret: string) => void; // NEW: Setter function
+  clearPaymentIntent: () => void; // NEW: Function to clear the PaymentIntent client secret
 }
+
+type CheckoutPersist = (
+  config: StateCreator<CheckoutStore>,
+  options: PersistOptions<CheckoutStore>
+) => StateCreator<CheckoutStore>;
 
 export const useCheckoutStore = create<CheckoutStore>()(
   persist(
     (set, get) => ({
+      paymentIntentClientSecret: "", // Initially empty
       billingSameAsShipping: true, // Default: billing is same as shipping
       orderValidated: false, // NEW: Initially, order is not validated
       checkoutData: {
@@ -70,6 +81,13 @@ export const useCheckoutStore = create<CheckoutStore>()(
         discountTotal: 0,
         total: 0,
       },
+
+      // NEW: Setter for PaymentIntent client secret
+      setPaymentIntentClientSecret: (clientSecret: string) =>
+        set(() => ({ paymentIntentClientSecret: clientSecret })),
+
+      // NEW: Function to clear the PaymentIntent client secret
+      clearPaymentIntent: () => set(() => ({ paymentIntentClientSecret: "" })),
 
       setBillingSameAsShipping: (value: boolean) =>
         set(() => ({ billingSameAsShipping: value })),
@@ -266,7 +284,11 @@ export const useCheckoutStore = create<CheckoutStore>()(
         checkoutData: state.checkoutData,
         billingSameAsShipping: state.billingSameAsShipping,
         orderValidated: state.orderValidated,
+        paymentIntentClientSecret: state.paymentIntentClientSecret, // Persist the PaymentIntent secret
       }),
     }
   )
 );
+
+// Export the persist object for onFinishHydration usage
+export const checkoutStorePersist = (useCheckoutStore as any).persist;

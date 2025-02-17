@@ -10,6 +10,7 @@ import type { PaymentIntent } from "@stripe/stripe-js";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
 
 const StripePaymentForm = () => {
+  const SITE_URL = process.env.NEXT_PUBLIC_APP_URL;
   const stripe = useStripe();
   const elements = useElements();
 
@@ -17,7 +18,8 @@ const StripePaymentForm = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // READ CHECKOUT DATA (e.g. total) FROM THE STORE
-  const { checkoutData } = useCheckoutStore();
+  const { checkoutData, orderId } = useCheckoutStore();
+  console.log("checkoutData [StripePaymentForm]", checkoutData);
   // Convert the total (e.g. $50.00) to cents (5000).
   const totalInCents = Math.round(checkoutData.total * 100);
 
@@ -45,6 +47,7 @@ const StripePaymentForm = () => {
         // pass real order data here
         amount: totalInCents,
         currency: "usd",
+        orderId: orderId,
       }),
     });
     const { clientSecret } = await response.json();
@@ -54,7 +57,7 @@ const StripePaymentForm = () => {
       elements,
       clientSecret,
       confirmParams: {
-        return_url: "http://localhost:3000/thankyou",
+        return_url: `${SITE_URL}/thankyou`,
       },
     });
 
