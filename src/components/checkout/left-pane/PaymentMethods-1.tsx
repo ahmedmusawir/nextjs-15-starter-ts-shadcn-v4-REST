@@ -9,7 +9,8 @@ import StripePaymentForm from "../payments/StripePaymentForm";
 const PaymentMethods = () => {
   const router = useRouter();
   // Retrieve orderValidated flag along with checkoutData
-  const { checkoutData, orderValidated } = useCheckoutStore();
+  const { checkoutData, orderValidated, isAnyBlockEditing } =
+    useCheckoutStore();
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 

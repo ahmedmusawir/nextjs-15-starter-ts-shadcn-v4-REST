@@ -31,6 +31,7 @@ const ShippingForm = () => {
     setBilling,
     billingSameAsShipping,
     setBillingSameAsShipping,
+    setIsAnyBlockEditing,
   } = useCheckoutStore();
 
   // Local state to control editing mode.
@@ -72,6 +73,8 @@ const ShippingForm = () => {
     }
     // After saving, switch to display mode.
     setIsEditing(false);
+    // Set block editing status for payment to show up
+    setIsAnyBlockEditing(false);
   };
 
   // 5. Handle changes to the "Billing same as shipping" checkbox.
@@ -286,7 +289,10 @@ const ShippingForm = () => {
             <p className="text-gray-700">No shipping info provided.</p>
           )}
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={() => {
+              setIsEditing(true);
+              setIsAnyBlockEditing(true);
+            }}
             className="mt-2 text-indigo-600 border border-black px-4 py-1 rounded-md"
           >
             Edit

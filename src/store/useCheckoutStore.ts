@@ -37,6 +37,8 @@ interface CheckoutStore {
   setOrderId: (id: number) => void;
   emailSaved: boolean;
   setEmailSaved: (value: boolean) => void;
+  isAnyBlockEditing: boolean;
+  setIsAnyBlockEditing: (value: boolean) => void;
 }
 
 type CheckoutPersist = (
@@ -288,6 +290,11 @@ export const useCheckoutStore = create<CheckoutStore>()(
 
       // NEW: setter function
       setEmailSaved: (value: boolean) => set(() => ({ emailSaved: value })),
+
+      // NEW: Initialize isAnyBlockEditing to false
+      isAnyBlockEditing: false,
+      setIsAnyBlockEditing: (value: boolean) =>
+        set(() => ({ isAnyBlockEditing: value })),
 
       // ... END OF (set, get)
     }),

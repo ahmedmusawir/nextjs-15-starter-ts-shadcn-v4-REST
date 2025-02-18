@@ -2,13 +2,8 @@ import { useCheckoutStore } from "@/store/useCheckoutStore";
 import React, { useState } from "react";
 
 const ContactEmail = () => {
-  const {
-    checkoutData,
-    setBilling,
-    setShipping,
-    setEmailSaved,
-    setIsAnyBlockEditing,
-  } = useCheckoutStore();
+  const { checkoutData, setBilling, setShipping, emailSaved, setEmailSaved } =
+    useCheckoutStore();
   const email = checkoutData.billing.email || "";
   const [error, setError] = useState("");
 
@@ -34,10 +29,8 @@ const ContactEmail = () => {
     setError("");
     // Close edit mode only when the user clicks "Continue"
     setIsEditing(false);
-    // Mark email as saved in the store
+    // NEW: Mark email as saved in the store
     setEmailSaved(true);
-    // Setting Any Block Editing status
-    setIsAnyBlockEditing(false);
   };
 
   return (
@@ -75,7 +68,6 @@ const ContactEmail = () => {
             onClick={() => {
               setIsEditing(true);
               setEmailSaved(false);
-              setIsAnyBlockEditing(true);
             }}
             className="text-indigo-600 border-2 border-black px-10"
           >

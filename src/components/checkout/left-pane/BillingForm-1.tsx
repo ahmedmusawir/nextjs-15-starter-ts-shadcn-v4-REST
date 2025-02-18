@@ -35,12 +35,8 @@ type BillingFormValues = z.infer<typeof billingSchema>;
 
 const BillingForm = () => {
   // Destructure the global store values, including our new flag.
-  const {
-    checkoutData,
-    setBilling,
-    billingSameAsShipping,
-    setIsAnyBlockEditing,
-  } = useCheckoutStore();
+  const { checkoutData, setBilling, billingSameAsShipping } =
+    useCheckoutStore();
 
   // Local state to track if the billing form is in edit mode.
   // Default to false because when billingSameAsShipping is true we want a closed display.
@@ -75,7 +71,8 @@ const BillingForm = () => {
     const updatedBilling = { ...checkoutData.billing, ...data };
     setBilling(updatedBilling);
     setIsEditing(false);
-    setIsAnyBlockEditing(false);
+    // Optionally, if you want to also update the shipping checkbox,
+    // that logic can be added elsewhere.
   };
 
   // When billingSameAsShipping is true, we show a closed view with "Same as Shipping".
@@ -121,10 +118,7 @@ const BillingForm = () => {
             <p className="text-gray-700">No billing info provided.</p>
           )}
           <button
-            onClick={() => {
-              setIsEditing(true);
-              setIsAnyBlockEditing(true);
-            }}
+            onClick={() => setIsEditing(true)}
             className="mt-2 text-indigo-600 border border-black px-4 py-1 rounded-md"
           >
             Edit
