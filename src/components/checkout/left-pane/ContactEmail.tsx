@@ -2,7 +2,8 @@ import { useCheckoutStore } from "@/store/useCheckoutStore";
 import React, { useState } from "react";
 
 const ContactEmail = () => {
-  const { checkoutData, setBilling, setShipping } = useCheckoutStore();
+  const { checkoutData, setBilling, setShipping, emailSaved, setEmailSaved } =
+    useCheckoutStore();
   const email = checkoutData.billing.email || "";
   const [error, setError] = useState("");
 
@@ -26,7 +27,10 @@ const ContactEmail = () => {
       return;
     }
     setError("");
-    setIsEditing(false); // Close edit mode only when the user clicks "Continue"
+    // Close edit mode only when the user clicks "Continue"
+    setIsEditing(false);
+    // NEW: Mark email as saved in the store
+    setEmailSaved(true);
   };
 
   return (
@@ -54,14 +58,17 @@ const ContactEmail = () => {
             onClick={handleSaveEmail}
             className="mt-2 bg-indigo-600 text-white py-1 px-3 rounded-md"
           >
-            Continue
+            Save & Continue
           </button>
         </div>
       ) : (
         <div className="flex justify-between items-center mt-2">
           <p className="text-gray-900">{checkoutData.billing.email}</p>
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={() => {
+              setIsEditing(true);
+              setEmailSaved(false);
+            }}
             className="text-indigo-600 border-2 border-black px-10"
           >
             Edit

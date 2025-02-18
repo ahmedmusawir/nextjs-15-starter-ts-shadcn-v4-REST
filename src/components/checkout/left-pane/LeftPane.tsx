@@ -5,8 +5,11 @@ import ContactEmail from "./ContactEmail";
 import ShippingInfo from "./ShippingInfo";
 import PaymentMethods from "./PaymentMethods";
 import OrderValidation from "./OrderValidation";
+import { useCheckoutStore } from "@/store/useCheckoutStore";
 
 const LeftPane = () => {
+  const { emailSaved } = useCheckoutStore();
+
   return (
     <div>
       {/* OrderValidation runs its useEffect to monitor checkoutData and update orderValidated */}
@@ -21,7 +24,15 @@ const LeftPane = () => {
       <div className="mt-10 border-t border-gray-200 pt-10">
         <h1 className="text-2xl text-gray-900">Shipping information</h1>
 
-        <ShippingInfo />
+        {/* <ShippingInfo /> */}
+
+        {emailSaved ? (
+          <ShippingInfo />
+        ) : (
+          <p className="text-sm text-gray-600">
+            Please save your email to proceed with shipping details.
+          </p>
+        )}
       </div>
 
       {/* Payment */}

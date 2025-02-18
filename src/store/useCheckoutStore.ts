@@ -35,6 +35,8 @@ interface CheckoutStore {
   clearPaymentIntent: () => void; // NEW: Function to clear the PaymentIntent client secret
   orderId: number | null;
   setOrderId: (id: number) => void;
+  emailSaved: boolean;
+  setEmailSaved: (value: boolean) => void;
 }
 
 type CheckoutPersist = (
@@ -280,6 +282,14 @@ export const useCheckoutStore = create<CheckoutStore>()(
       // NEW: Setter for orderValidated
       setOrderValidated: (value: boolean) =>
         set(() => ({ orderValidated: value })),
+
+      // NEW: emailSaved boolean
+      emailSaved: false,
+
+      // NEW: setter function
+      setEmailSaved: (value: boolean) => set(() => ({ emailSaved: value })),
+
+      // ... END OF (set, get)
     }),
     {
       name: "checkout-storage",
@@ -289,6 +299,7 @@ export const useCheckoutStore = create<CheckoutStore>()(
         billingSameAsShipping: state.billingSameAsShipping,
         orderValidated: state.orderValidated,
         paymentIntentClientSecret: state.paymentIntentClientSecret, // Persist the PaymentIntent secret
+        emailSaved: state.emailSaved, // Persist the emailSaved flag
       }),
     }
   )

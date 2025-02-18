@@ -33,6 +33,8 @@ interface CheckoutStore {
   paymentIntentClientSecret: string; // NEW: Stores the PaymentIntent client secret
   setPaymentIntentClientSecret: (clientSecret: string) => void; // NEW: Setter function
   clearPaymentIntent: () => void; // NEW: Function to clear the PaymentIntent client secret
+  orderId: number | null;
+  setOrderId: (id: number) => void;
 }
 
 type CheckoutPersist = (
@@ -43,6 +45,8 @@ type CheckoutPersist = (
 export const useCheckoutStore = create<CheckoutStore>()(
   persist(
     (set, get) => ({
+      orderId: null,
+      setOrderId: (id) => set({ orderId: id }),
       paymentIntentClientSecret: "", // Initially empty
       billingSameAsShipping: true, // Default: billing is same as shipping
       orderValidated: false, // NEW: Initially, order is not validated
@@ -291,4 +295,5 @@ export const useCheckoutStore = create<CheckoutStore>()(
 );
 
 // Export the persist object for onFinishHydration usage
-export const checkoutStorePersist = (useCheckoutStore as any).persist;
+export const checkoutStorePersist: CheckoutPersist = (useCheckoutStore as any)
+  .persist;

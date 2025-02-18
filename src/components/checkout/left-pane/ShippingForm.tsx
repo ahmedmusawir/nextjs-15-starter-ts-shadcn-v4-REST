@@ -13,7 +13,6 @@ const shippingSchema = z.object({
   last_name: z.string().min(1, "Last name is required"),
   address_1: z.string().min(5, "Address is required"),
   city: z.string().min(2, "City is required"),
-  // state: z.string().min(2, "State is required"),
   state: z.preprocess(
     (val) => (val === null ? "" : val),
     z.string().min(2, "State is required")
@@ -34,6 +33,11 @@ const ShippingForm = () => {
     setBillingSameAsShipping,
   } = useCheckoutStore();
 
+  // Local state to control editing mode.
+  const [isEditing, setIsEditing] = useState<boolean>(
+    !checkoutData.shipping.first_name
+  );
+
   // 3. Use the Zod schema as the resolver for React Hook Form.
   //    Destructure "reset" so we can update the form when checkoutData.shipping changes.
   const {
@@ -47,7 +51,7 @@ const ShippingForm = () => {
     defaultValues: checkoutData.shipping,
   });
 
-  // 3.1. Whenever checkoutData.shipping updates (e.g., on mount or after Save),
+  // 3. Whenever checkoutData.shipping updates (e.g., on mount or after Save),
   //      reset the form with the latest values.
   useEffect(() => {
     reset(checkoutData.shipping);
@@ -66,6 +70,8 @@ const ShippingForm = () => {
     if (billingSameAsShipping) {
       setBilling(updatedShipping);
     }
+    // After saving, switch to display mode.
+    setIsEditing(false);
   };
 
   // 5. Handle changes to the "Billing same as shipping" checkbox.
@@ -77,10 +83,6 @@ const ShippingForm = () => {
       setBilling(checkoutData.shipping);
     }
   };
-
-  // const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setBillingSameAsShipping(e.target.checked);
-  // };
 
   // Dynamically import StateSelector, disabling SSR.
   const StateSelector = dynamic(() => import("../left-pane/StateSelector"), {
@@ -116,207 +118,181 @@ const ShippingForm = () => {
       </div>
 
       {/* The existing shipping form */}
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4"
-      >
-        {/* First Name */}
-        <div>
-          <label
-            htmlFor="first-name"
-            className="block text-sm font-medium text-gray-700"
-          >
-            First name
-          </label>
-          <input
-            {...register("first_name")}
-            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-          />
-          {errors.first_name && (
-            <p className="text-red-500 text-sm">{errors.first_name.message}</p>
-          )}
-        </div>
-
-        {/* Last Name */}
-        <div>
-          <label
-            htmlFor="last-name"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Last name
-          </label>
-          <input
-            {...register("last_name")}
-            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-          />
-          {errors.last_name && (
-            <p className="text-red-500 text-sm">{errors.last_name.message}</p>
-          )}
-        </div>
-
-        {/* Address */}
-        <div className="sm:col-span-2">
-          <label
-            htmlFor="address"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Address
-          </label>
-          <input
-            {...register("address_1")}
-            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-          />
-          {errors.address_1 && (
-            <p className="text-red-500 text-sm">{errors.address_1.message}</p>
-          )}
-        </div>
-
-        {/* City */}
-        <div>
-          <label
-            htmlFor="city"
-            className="block text-sm font-medium text-gray-700"
-          >
-            City
-          </label>
-          <input
-            {...register("city")}
-            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-          />
-          {errors.city && (
-            <p className="text-red-500 text-sm">{errors.city.message}</p>
-          )}
-        </div>
-
-        {/* State using react-country-state-city */}
-        <div>
-          <label
-            htmlFor="state"
-            className="block text-sm font-medium text-gray-700"
-          >
-            State
-          </label>
-          <Controller
-            name="state"
-            control={control}
-            render={({ field, fieldState }) => (
-              <>
-                <StateSelector
-                  value={field.value}
-                  onChange={(newState) => field.onChange(newState)}
-                />
-                {fieldState.error && (
-                  <p className="text-red-500 text-sm">
-                    {fieldState.error.message}
-                  </p>
-                )}
-              </>
+      {isEditing ? (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4"
+        >
+          {/* First Name */}
+          <div>
+            <label
+              htmlFor="first-name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              First name
+            </label>
+            <input
+              {...register("first_name")}
+              className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+            {errors.first_name && (
+              <p className="text-red-500 text-sm">
+                {errors.first_name.message}
+              </p>
             )}
-          />
-        </div>
+          </div>
 
-        {/* <div>
-          <label
-            htmlFor="state"
-            className="block text-sm font-medium text-gray-700"
-          >
-            State
-          </label>
-          <Controller
-            name="state"
-            control={control}
-            render={({ field, fieldState }) => (
-              <>
-                <StateSelector
-                  value={field.value}
-                  onChange={(newState) => field.onChange(newState)}
-                />
-                {fieldState.error && (
-                  <p className="text-red-500 text-sm">
-                    {fieldState.error.message}
-                  </p>
-                )}
-              </>
+          {/* Last Name */}
+          <div>
+            <label
+              htmlFor="last-name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Last name
+            </label>
+            <input
+              {...register("last_name")}
+              className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+            {errors.last_name && (
+              <p className="text-red-500 text-sm">{errors.last_name.message}</p>
             )}
-          />
-        </div> */}
+          </div>
 
-        {/* <div>
-          <label
-            htmlFor="state"
-            className="block text-sm font-medium text-gray-700"
-          >
-            State
-          </label>
-          <Controller
-            name="state"
-            control={control}
-            // Remove the defaultValue prop here; rely on useForm’s defaultValues
-            render={({ field, fieldState }) => (
-              <>
-                <StateSelect
-                  key={field.value || "default"} // Force re-mount when field.value changes
-                  countryid={233}
-                  value={field.value || ""}
-                  onChange={(selected) => {
-                    const iso = (selected as any)?.state_code || "";
-                    field.onChange(iso);
-                  }}
-                />
-                {fieldState.error && (
-                  <p className="text-red-500 text-sm">
-                    {fieldState.error.message}
-                  </p>
-                )}
-              </>
+          {/* Address */}
+          <div className="sm:col-span-2">
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Address
+            </label>
+            <input
+              {...register("address_1")}
+              className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+            {errors.address_1 && (
+              <p className="text-red-500 text-sm">{errors.address_1.message}</p>
             )}
-          />
-        </div> */}
+          </div>
 
-        {/* Postal Code */}
-        <div>
-          <label
-            htmlFor="postcode"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Postal Code
-          </label>
-          <input
-            {...register("postcode")}
-            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-          />
-          {errors.postcode && (
-            <p className="text-red-500 text-sm">{errors.postcode.message}</p>
+          {/* City */}
+          <div>
+            <label
+              htmlFor="city"
+              className="block text-sm font-medium text-gray-700"
+            >
+              City
+            </label>
+            <input
+              {...register("city")}
+              className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+            {errors.city && (
+              <p className="text-red-500 text-sm">{errors.city.message}</p>
+            )}
+          </div>
+
+          {/* State using react-country-state-city */}
+          <div>
+            <label
+              htmlFor="state"
+              className="block text-sm font-medium text-gray-700"
+            >
+              State
+            </label>
+            <Controller
+              name="state"
+              control={control}
+              render={({ field, fieldState }) => (
+                <>
+                  <StateSelector
+                    value={field.value}
+                    onChange={(newState) => field.onChange(newState)}
+                  />
+                  {fieldState.error && (
+                    <p className="text-red-500 text-sm">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </>
+              )}
+            />
+          </div>
+
+          {/* Postal Code */}
+          <div>
+            <label
+              htmlFor="postcode"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Postal Code
+            </label>
+            <input
+              {...register("postcode")}
+              className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+            {errors.postcode && (
+              <p className="text-red-500 text-sm">{errors.postcode.message}</p>
+            )}
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Phone Number
+            </label>
+            <input
+              {...register("phone")}
+              className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
+            />
+            {errors.phone && (
+              <p className="text-red-500 text-sm">{errors.phone.message}</p>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <div className="sm:col-span-2">
+            <button
+              type="submit"
+              className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700"
+            >
+              Save &amp; Continue
+            </button>
+          </div>
+        </form>
+      ) : (
+        // Display mode: show shipping info as text with an Edit button.
+        <div className="border p-4 rounded-md">
+          {checkoutData.shipping.first_name ? (
+            <>
+              <p className="text-gray-700">
+                <strong>
+                  {checkoutData.shipping.first_name}{" "}
+                  {checkoutData.shipping.last_name}
+                </strong>
+              </p>
+              <p className="text-gray-700">{checkoutData.shipping.address_1}</p>
+              <p className="text-gray-700">
+                {checkoutData.shipping.city}, {checkoutData.shipping.state}{" "}
+                {checkoutData.shipping.postcode}
+              </p>
+              <p className="text-gray-700">{checkoutData.shipping.phone}</p>
+            </>
+          ) : (
+            <p className="text-gray-700">No shipping info provided.</p>
           )}
-        </div>
-
-        {/* Phone Number */}
-        <div>
-          <label
-            htmlFor="phone"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Phone Number
-          </label>
-          <input
-            {...register("phone")}
-            className="block w-full rounded-md px-3 py-2 text-base outline outline-1 outline-gray-300 placeholder:text-gray-400 focus:outline-indigo-600"
-          />
-          {errors.phone && (
-            <p className="text-red-500 text-sm">{errors.phone.message}</p>
-          )}
-        </div>
-
-        {/* Submit Button */}
-        <div className="sm:col-span-2">
           <button
-            type="submit"
-            className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700"
+            onClick={() => setIsEditing(true)}
+            className="mt-2 text-indigo-600 border border-black px-4 py-1 rounded-md"
           >
-            Save &amp; Continue
+            Edit
           </button>
         </div>
-      </form>
+      )}
     </div>
   );
 };
