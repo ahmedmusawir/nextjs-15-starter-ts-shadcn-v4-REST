@@ -153,10 +153,10 @@ export const useCheckoutStore = create<CheckoutStore>()(
           const taxTotal = 0; // Future implementation
           const total = subtotal + shippingCost - discount;
 
-          console.log(
-            "calculateTotals: discount [useCheckoutStore.ts]",
-            discount
-          );
+          // console.log(
+          //   "calculateTotals: discount [useCheckoutStore.ts]",
+          //   discount
+          // );
 
           return {
             checkoutData: { ...state.checkoutData, subtotal, taxTotal, total },
@@ -181,10 +181,10 @@ export const useCheckoutStore = create<CheckoutStore>()(
           // Apply the coupon and get updated checkout data
           const updatedCheckoutData = applyCoupon(coupon, checkoutData);
 
-          console.log(
-            "applyCoupon fn [useCheckoutStore.ts]",
-            updatedCheckoutData
-          );
+          // console.log(
+          //   "applyCoupon fn [useCheckoutStore.ts]",
+          //   updatedCheckoutData
+          // );
 
           // Extract discount value
           const discountTotal = calculateCouponDiscount(
@@ -202,13 +202,13 @@ export const useCheckoutStore = create<CheckoutStore>()(
                 discountTotal,
               },
             };
-            console.log("Updated Zustand state with discount:", newState);
+            // console.log("Updated Zustand state with discount:", newState);
             return newState;
           });
 
           // Ensure total is recalculated after the state has updated
           setTimeout(() => {
-            console.log("Triggering calculateTotals...");
+            // console.log("Triggering calculateTotals...");
             get().calculateTotals();
           }, 50);
 

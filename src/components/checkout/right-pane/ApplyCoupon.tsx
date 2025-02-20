@@ -25,7 +25,7 @@ const ApplyCoupon = () => {
     try {
       const coupon = await fetchCouponByCode(couponCode);
 
-      console.log("coupon [ApplyCoupon.tsx]", coupon);
+      // console.log("coupon [ApplyCoupon.tsx]", coupon);
 
       if (!coupon) {
         setError("Invalid or expired coupon.");

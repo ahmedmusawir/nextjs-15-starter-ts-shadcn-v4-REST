@@ -6,14 +6,11 @@ import {
 } from "@stripe/react-stripe-js";
 import type { PaymentIntent } from "@stripe/stripe-js";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
-import { createWoocomOrder, updateWoocomOrder } from "@/services/orderServices";
+import { createWoocomOrder } from "@/services/orderServices";
 import { OrderSummary } from "@/types/order";
-import { useCartStore } from "@/store/useCartStore";
-import { useRouter } from "next/navigation";
 
 const StripePaymentForm = () => {
   const SITE_URL = process.env.NEXT_PUBLIC_APP_URL;
-  const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
 
@@ -22,8 +19,7 @@ const StripePaymentForm = () => {
   const [modalMessage, setModalMessage] = useState<string>("");
 
   // READ CHECKOUT DATA (e.g. total) FROM THE STORE
-  const { checkoutData, removeCoupon } = useCheckoutStore();
-  const { clearCart } = useCartStore();
+  const { checkoutData, orderId } = useCheckoutStore();
   const [orderInfo, setOrderInfo] = useState<any>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
@@ -105,18 +101,10 @@ const StripePaymentForm = () => {
       const result = await stripe.confirmPayment({
         elements,
         clientSecret,
-        confirmParams: {}, // Even if it's empty, it must exist
-        redirect: "if_required",
+        confirmParams: {
+          return_url: `${SITE_URL}/thankyou`,
+        },
       });
-
-      // const result = await stripe.confirmPayment({
-      //   elements,
-      //   clientSecret,
-      //   confirmParams: {
-      //     return_url: `${SITE_URL}/checkout`,
-      //     // return_url: `${SITE_URL}/thankyou`,
-      //   },
-      // });
 
       if (result.error) {
         setModalMessage("Sorry Payment Failed... plz contact support");
@@ -128,25 +116,8 @@ const StripePaymentForm = () => {
         const paymentIntent = result.paymentIntent as PaymentIntent;
         if (paymentIntent.status === "succeeded") {
           setModalMessage("Success!");
-          // Next steps: update WooCommerce order status to "processing", clear cart, and redirect.
-          console.log("Payment succeeded:", paymentIntent);
-          setModalMessage("Success! Updating Order...");
-
-          // Update WooCommerce order status to "processing" using the order ID from our orderInfo
-          const updateResult = await updateWoocomOrder(
-            orderInfo.id,
-            "processing"
-          );
-          if (updateResult) {
-            // Clear the cart and coupon data
-            clearCart();
-            removeCoupon();
-            // Redirect to the Thank You page
-            router.push("/thankyou");
-            // window.location.href = `${SITE_URL}/thankyou`;
-          } else {
-            setModalMessage("Order update failed. Please contact support.");
-          }
+          // Here you would update the order status, clear the cart, and redirect to /thankyou.
+          // For now, we'll assume success and let the modal close.
         }
       }
     } catch (error) {

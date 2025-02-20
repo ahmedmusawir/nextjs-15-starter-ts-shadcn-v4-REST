@@ -253,7 +253,6 @@ export const fetchShippingZones = async (): Promise<any[]> => {
 import { WOOCOM_REST_GET_SHIPPING_METHODS_BY_ZONE } from "@/rest-api/checkout";
 import { CheckoutData } from "@/types/checkout";
 import { Coupon } from "@/types/coupon";
-import { OrderPayload } from "@/types/order";
 
 export const fetchShippingMethodsByZone = async (
   zoneId: number
@@ -276,41 +275,5 @@ export const fetchShippingMethodsByZone = async (
   } catch (error) {
     console.error(`Error fetching shipping methods for zone ${zoneId}:`, error);
     return [];
-  }
-};
-
-/**
- * Submits an order to WooCommerce via our Next.js backend endpoint.
- *
- * This function sends a POST request to the '/api/place-order/route' endpoint using the
- * assembled Order Object (of type OrderPayload) from the checkout store. The backend endpoint
- * then forwards this request to WooCommerce with the appropriate authentication credentials.
- *
- * @param order - The order payload containing billing, shipping, line items, shipping lines, and coupon lines.
- * @returns A promise that resolves to the WooCommerce order data on success, or null if the submission fails.
- */
-export const createWoocomOrder = async (order: CheckoutData): Promise<any> => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/place-order`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-      }
-    );
-
-    if (!response.ok) {
-      console.error("Order submission failed:", response.statusText);
-      return null;
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error submitting order:", error);
-    return null;
   }
 };

@@ -143,7 +143,7 @@ const StripePaymentForm = () => {
             removeCoupon();
             // Redirect to the Thank You page
             router.push("/thankyou");
-            // window.location.href = `${SITE_URL}/thankyou`;
+            window.location.href = `${SITE_URL}/thankyou`;
           } else {
             setModalMessage("Order update failed. Please contact support.");
           }

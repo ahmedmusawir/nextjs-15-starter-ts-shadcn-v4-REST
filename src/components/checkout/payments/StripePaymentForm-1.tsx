@@ -18,7 +18,7 @@ const StripePaymentForm = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // READ CHECKOUT DATA (e.g. total) FROM THE STORE
-  const { checkoutData } = useCheckoutStore();
+  const { checkoutData, orderId } = useCheckoutStore();
   console.log("checkoutData [StripePaymentForm]", checkoutData);
   // Convert the total (e.g. $50.00) to cents (5000).
   const totalInCents = Math.round(checkoutData.total * 100);
@@ -47,7 +47,7 @@ const StripePaymentForm = () => {
         // pass real order data here
         amount: totalInCents,
         currency: "usd",
-        // orderId: checkoutData.orderId,
+        orderId: orderId,
       }),
     });
     const { clientSecret } = await response.json();
