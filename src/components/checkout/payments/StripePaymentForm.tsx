@@ -4,7 +4,6 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import type { PaymentIntent } from "@stripe/stripe-js";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
 import { createWoocomOrder, updateWoocomOrder } from "@/services/orderServices";
 import { OrderSummary } from "@/types/order";
@@ -26,8 +25,6 @@ const StripePaymentForm = () => {
   const { clearCart } = useCartStore();
   const [orderInfo, setOrderInfo] = useState<any>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-
-  // const totalInCents = Math.round(checkoutData.total * 100);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,6 +98,10 @@ const StripePaymentForm = () => {
       return; // Or handle the error as needed
     }
     // Payment submission function
+    console.log(
+      "checkout total: [StripePaymentForm.tsx - processPayment]",
+      checkoutData.total
+    );
     try {
       const response = await fetch("/api/create-payment-intent", {
         method: "POST",
@@ -138,7 +139,7 @@ const StripePaymentForm = () => {
           if (updateResult) {
             // clearCart();
             // removeCoupon();
-            router.push("/thankyou"); // Redirect after successful update
+            // router.push("/thankyou"); // Redirect after successful update
           } else {
             setModalMessage("Order update failed. Please contact support.");
           }

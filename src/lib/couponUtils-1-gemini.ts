@@ -149,7 +149,6 @@ export const validateCoupon = (
  * @param checkoutData - Current checkout state.
  * @returns {CheckoutData} - Updated checkout state with applied discount.
  */
-
 export const applyCoupon = (
   coupon: Coupon,
   checkoutData: CheckoutData
@@ -162,21 +161,11 @@ export const applyCoupon = (
       discountAmount = coupon.discount_value;
       break;
     case "percent":
-      // Iterate over each item in the cart
-      checkoutData.cartItems.forEach((item) => {
-        // Calculate the total price for the current item
-        const itemLineTotal = item.price * item.quantity;
-
-        // Compute the discount for the current item
-        let itemDiscount = (itemLineTotal * coupon.discount_value) / 100;
-
-        // Round the item's discount to two decimal places
-        itemDiscount = parseFloat(itemDiscount.toFixed(2));
-
-        // Add the rounded discount of the current item to the total discount amount
-        discountAmount += itemDiscount;
-      });
-
+      discountAmount = checkoutData.cartItems.reduce((total, item) => {
+        const itemDiscount =
+          (item.price * item.quantity * coupon.discount_value) / 100;
+        return total + itemDiscount;
+      }, 0);
       break;
     case "fixed_product":
       discountAmount = checkoutData.cartItems.reduce((total, item) => {
@@ -190,10 +179,9 @@ export const applyCoupon = (
       break;
   }
 
-  // Ensure discount does not exceed subtotal
+  // Ensure discount does not exceed subtotal (important!)
   discountAmount = Math.min(discountAmount, checkoutData.subtotal);
 
-  // Apply free shipping if coupon allows it
   if (coupon.free_shipping) {
     updatedShippingCost = 0;
   }
@@ -206,11 +194,59 @@ export const applyCoupon = (
     coupon: {
       code: coupon.code,
       description: coupon.description,
-      discount: discountAmount, // Ensuring this is set correctly
+      discount: discountAmount,
       free_shipping: coupon.free_shipping,
     },
   };
 };
+
+// export const applyCoupon = (
+//   coupon: Coupon,
+//   checkoutData: CheckoutData
+// ): CheckoutData => {
+//   let discountAmount = 0;
+//   let updatedShippingCost = checkoutData.shippingCost;
+
+//   switch (coupon.discount_type) {
+//     case "fixed_cart":
+//       discountAmount = coupon.discount_value;
+//       break;
+//     case "percent":
+//       discountAmount = (checkoutData.subtotal * coupon.discount_value) / 100;
+//       break;
+//     case "fixed_product":
+//       discountAmount = checkoutData.cartItems.reduce((total, item) => {
+//         if (coupon.products_included.includes(item.id)) {
+//           return (
+//             total + (item.price * item.quantity * coupon.discount_value) / 100
+//           );
+//         }
+//         return total;
+//       }, 0);
+//       break;
+//   }
+
+//   // Ensure discount does not exceed subtotal
+//   discountAmount = Math.min(discountAmount, checkoutData.subtotal);
+
+//   // Apply free shipping if coupon allows it
+//   if (coupon.free_shipping) {
+//     updatedShippingCost = 0;
+//   }
+
+//   return {
+//     ...checkoutData,
+//     discountTotal: discountAmount,
+//     total: checkoutData.subtotal + updatedShippingCost - discountAmount,
+//     shippingCost: updatedShippingCost,
+//     coupon: {
+//       code: coupon.code,
+//       description: coupon.description,
+//       discount: discountAmount, // Ensuring this is set correctly
+//       free_shipping: coupon.free_shipping,
+//     },
+//   };
+// };
 
 /**
  * Removes the applied coupon and resets totals.
