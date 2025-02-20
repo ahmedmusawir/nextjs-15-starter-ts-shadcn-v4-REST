@@ -36,6 +36,7 @@ const StripePaymentForm = () => {
     setIsProcessing(true);
     setError(null);
 
+    // 1. Submit the Payment Element for inline validation
     const submitResult = await elements.submit();
     if (submitResult.error) {
       setError(submitResult.error.message ?? "Validation error");
@@ -43,6 +44,7 @@ const StripePaymentForm = () => {
       return;
     }
 
+    // 2. Create the order in WooCommerce (pending payment)
     try {
       const orderResponse = await createWoocomOrder(checkoutData);
       if (!orderResponse) {
@@ -50,11 +52,10 @@ const StripePaymentForm = () => {
         setIsProcessing(false);
         return;
       }
-
       console.log("Order submission successful:", orderResponse);
 
+      // Build a simplified order object
       const orderObject: OrderSummary = {
-        // Build simplified order object
         id: orderResponse.id,
         status: orderResponse.status,
         total: orderResponse.total,
@@ -74,33 +75,21 @@ const StripePaymentForm = () => {
 
       console.log("Simplified Order Object:", orderObject);
 
-      localStorage.setItem("latestOrder", JSON.stringify(orderObject)); // Persist the order
+      // Persist the order for later use (e.g., Thank You page)
+      localStorage.setItem("latestOrder", JSON.stringify(orderObject));
 
-      // *** KEY CHANGE: Update the state *immediately* after successful order creation ***
-      setOrderInfo(orderObject); // This is the CRITICAL fix
-
+      // Save the order object in state and open the modal to show order summary
+      setOrderInfo(orderObject);
       setModalMessage("Processing Payment...");
-      setIsOrderModalOpen(true); // Open the modal
-
-      // Proceed to payment *after* orderInfo is updated in state.
-      await processPayment(elements, orderObject); // Call a separate async function
+      setIsOrderModalOpen(true);
     } catch (err) {
       console.error("Error submitting order:", err);
       setError("Order submission encountered an error. Please try again.");
       setIsProcessing(false);
-    } finally {
-      setIsProcessing(false);
+      return;
     }
-  };
 
-  const processPayment = async (elements: any, orderInfo: OrderSummary) => {
-    if (!stripe) {
-      // Check if stripe is loaded
-      console.error("Stripe is not initialized yet.");
-      setModalMessage("Payment processing failed. Stripe is not ready.");
-      return; // Or handle the error as needed
-    }
-    // Payment submission function
+    // 3. Process Payment
     try {
       const response = await fetch("/api/create-payment-intent", {
         method: "POST",
@@ -108,10 +97,17 @@ const StripePaymentForm = () => {
         body: JSON.stringify({
           amount: Math.round(checkoutData.total * 100),
           currency: "usd",
-          orderId: orderInfo.id, // Now orderInfo.id will be available.
+          orderId: orderInfo ? orderInfo.id : null,
         }),
       });
       const { clientSecret } = await response.json();
+
+      // const result = await stripe.confirmPayment({
+      //   elements,
+      //   clientSecret,
+      //   confirmParams: {}, // Even if it's empty, it must exist
+      //   redirect: "if_required",
+      // });
 
       const result = await stripe.confirmPayment({
         elements,
@@ -124,6 +120,7 @@ const StripePaymentForm = () => {
 
       if (result.error) {
         setModalMessage("Sorry Payment Failed... plz contact support");
+        setIsProcessing(false);
         return;
       }
 
@@ -134,11 +131,13 @@ const StripePaymentForm = () => {
           const updateResult = await updateWoocomOrder(
             orderInfo.id,
             "processing"
-          ); // Use orderInfo.id here
+          );
           if (updateResult) {
-            // clearCart();
-            // removeCoupon();
-            router.push("/thankyou"); // Redirect after successful update
+            clearCart();
+            removeCoupon();
+
+            // Now, redirect to the thank you page.  Guaranteed to happen *after* order update.
+            router.push("/thankyou");
           } else {
             setModalMessage("Order update failed. Please contact support.");
           }
@@ -150,7 +149,9 @@ const StripePaymentForm = () => {
         result.paymentIntent &&
         result.paymentIntent.status === "requires_action"
       ) {
+        // Handle cases where additional action is required (e.g., 3D Secure)
         setModalMessage("Payment requires additional action...");
+        // No redirect here, Stripe.js will handle the redirect to 3D Secure page
       } else {
         console.log("Payment status:", result.paymentIntent?.status);
         setModalMessage("Unexpected payment status. Please contact support.");
@@ -158,6 +159,8 @@ const StripePaymentForm = () => {
     } catch (error) {
       console.error("Payment error:", error);
       setModalMessage("Payment failed. Please contact support.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 

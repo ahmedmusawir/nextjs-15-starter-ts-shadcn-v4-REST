@@ -36,6 +36,7 @@ const StripePaymentForm = () => {
     setIsProcessing(true);
     setError(null);
 
+    // 1. Submit the Payment Element for inline validation
     const submitResult = await elements.submit();
     if (submitResult.error) {
       setError(submitResult.error.message ?? "Validation error");
@@ -43,6 +44,7 @@ const StripePaymentForm = () => {
       return;
     }
 
+    // 2. Create the order in WooCommerce (pending payment)
     try {
       const orderResponse = await createWoocomOrder(checkoutData);
       if (!orderResponse) {
@@ -50,11 +52,10 @@ const StripePaymentForm = () => {
         setIsProcessing(false);
         return;
       }
-
       console.log("Order submission successful:", orderResponse);
 
+      // Build a simplified order object
       const orderObject: OrderSummary = {
-        // Build simplified order object
         id: orderResponse.id,
         status: orderResponse.status,
         total: orderResponse.total,
@@ -74,33 +75,21 @@ const StripePaymentForm = () => {
 
       console.log("Simplified Order Object:", orderObject);
 
-      localStorage.setItem("latestOrder", JSON.stringify(orderObject)); // Persist the order
+      // Persist the order for later use (e.g., Thank You page)
+      localStorage.setItem("latestOrder", JSON.stringify(orderObject));
 
-      // *** KEY CHANGE: Update the state *immediately* after successful order creation ***
-      setOrderInfo(orderObject); // This is the CRITICAL fix
-
+      // Save the order object in state and open the modal to show order summary
+      setOrderInfo(orderObject);
       setModalMessage("Processing Payment...");
-      setIsOrderModalOpen(true); // Open the modal
-
-      // Proceed to payment *after* orderInfo is updated in state.
-      await processPayment(elements, orderObject); // Call a separate async function
+      setIsOrderModalOpen(true);
     } catch (err) {
       console.error("Error submitting order:", err);
       setError("Order submission encountered an error. Please try again.");
       setIsProcessing(false);
-    } finally {
-      setIsProcessing(false);
+      return;
     }
-  };
 
-  const processPayment = async (elements: any, orderInfo: OrderSummary) => {
-    if (!stripe) {
-      // Check if stripe is loaded
-      console.error("Stripe is not initialized yet.");
-      setModalMessage("Payment processing failed. Stripe is not ready.");
-      return; // Or handle the error as needed
-    }
-    // Payment submission function
+    // 3. Process Payment
     try {
       const response = await fetch("/api/create-payment-intent", {
         method: "POST",
@@ -108,10 +97,17 @@ const StripePaymentForm = () => {
         body: JSON.stringify({
           amount: Math.round(checkoutData.total * 100),
           currency: "usd",
-          orderId: orderInfo.id, // Now orderInfo.id will be available.
+          orderId: orderInfo ? orderInfo.id : null,
         }),
       });
       const { clientSecret } = await response.json();
+
+      // const result = await stripe.confirmPayment({
+      //   elements,
+      //   clientSecret,
+      //   confirmParams: {}, // Even if it's empty, it must exist
+      //   redirect: "if_required",
+      // });
 
       const result = await stripe.confirmPayment({
         elements,
@@ -124,41 +120,42 @@ const StripePaymentForm = () => {
 
       if (result.error) {
         setModalMessage("Sorry Payment Failed... plz contact support");
+        setIsProcessing(false);
         return;
       }
 
-      if (result.paymentIntent && result.paymentIntent.status === "succeeded") {
-        setModalMessage("Payment successful. Updating order...");
+      if ("paymentIntent" in result && result.paymentIntent) {
+        const paymentIntent = result.paymentIntent as PaymentIntent;
+        if (paymentIntent.status === "succeeded") {
+          setModalMessage("Success!");
+          // Next steps: update WooCommerce order status to "processing", clear cart, and redirect.
+          console.log("Payment succeeded:", paymentIntent);
+          setModalMessage("Success! Updating Order...");
 
-        try {
+          // Update WooCommerce order status to "processing" using the order ID from our orderInfo
           const updateResult = await updateWoocomOrder(
             orderInfo.id,
             "processing"
-          ); // Use orderInfo.id here
+          );
           if (updateResult) {
-            // clearCart();
-            // removeCoupon();
-            router.push("/thankyou"); // Redirect after successful update
+            // Clear the cart and coupon data
+            clearCart();
+            removeCoupon();
+            // Redirect to the Thank You page
+            router.push("/thankyou");
+            // window.location.href = `${SITE_URL}/thankyou`;
           } else {
             setModalMessage("Order update failed. Please contact support.");
           }
-        } catch (orderUpdateError) {
-          console.error("Order update error:", orderUpdateError);
-          setModalMessage("Order update failed. Please contact support.");
         }
-      } else if (
-        result.paymentIntent &&
-        result.paymentIntent.status === "requires_action"
-      ) {
-        setModalMessage("Payment requires additional action...");
-      } else {
-        console.log("Payment status:", result.paymentIntent?.status);
-        setModalMessage("Unexpected payment status. Please contact support.");
       }
     } catch (error) {
-      console.error("Payment error:", error);
-      setModalMessage("Payment failed. Please contact support.");
+      setModalMessage("Sorry Payment Failed... plz contact support");
+      setIsProcessing(false);
+      return;
     }
+
+    setIsProcessing(false);
   };
 
   return (
