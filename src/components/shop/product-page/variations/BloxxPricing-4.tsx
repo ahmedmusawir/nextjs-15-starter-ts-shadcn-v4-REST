@@ -204,6 +204,14 @@ const BloxxPricing = ({ onPriceChange, setCartItem }: BloxxPricingProps) => {
             { name: "Version", value: defaultVersion },
           ],
         }));
+
+        // NEW: Call utility function to update variation_id based on the defaults
+        // updateCartItemWithVariationIds(
+        //   defaultShape,
+        //   defaultSize,
+        //   defaultVersion,
+        //   defaultStyle
+        // );
       }
     }
   }, [variations]);
@@ -287,13 +295,7 @@ const BloxxPricing = ({ onPriceChange, setCartItem }: BloxxPricingProps) => {
 
   // Calculate current price when all selections are made
   const calculatePrice = () => {
-    let variationId = null;
-
     const matchedVariation = variations.find((variation) => {
-      console.log(
-        "Variation ID [BloxxPrice.tsx: calculatePrice]",
-        variation.id
-      );
       const shapeMatch = variation.attributes.find(
         (attr) => attr.name === "Pole Shape" && attr.option === selectedShape
       );
@@ -316,69 +318,178 @@ const BloxxPricing = ({ onPriceChange, setCartItem }: BloxxPricingProps) => {
     setCurrentPrice(price ? `$${price}` : "Select options");
     onPriceChange(price); // Pass the price to the parent component
 
-    if (matchedVariation) {
-      variationId = matchedVariation.id; // 2. Extract variation.id and store it
-      console.log(
-        "Extracted Variation ID [BloxxPrice.tsx: calculatePrice]:",
-        variationId
-      ); // Verification log
-    }
-
     // Update cart item with the calculated price
     setCartItem((prev) => ({
       ...prev,
-      variation_id: variationId || undefined,
       basePrice: price || 0,
       price: (price || 0) * prev.quantity,
     }));
+  };
+
+  // Utility function to update the cart item with the correct variation ID
+  // and update the variations array based on the current (or newly provided) selections.
+  // const updateCartItemWithVariationIds = (
+  //   selectedShapeParam?: string,
+  //   selectedSizeParam?: string,
+  //   selectedVersionParam?: string,
+  //   selectedStyleParam?: string | null
+  // ) => {
+  //   const selectedShapeToUse = selectedShapeParam ?? selectedShape;
+  //   const selectedSizeToUse = selectedSizeParam ?? selectedSize;
+  //   const selectedVersionToUse = selectedVersionParam ?? selectedVersion;
+  //   const selectedStyleToUse = selectedStyleParam ?? selectedPoleStyle;
+
+  //   console.log("Shape:", selectedShapeToUse);
+  //   console.log("Size:", selectedSizeToUse);
+  //   console.log("Version:", selectedVersionToUse);
+  //   console.log("Style:", selectedStyleToUse);
+  //   console.log("Variations array:", variations);
+
+  //   // Build required attributes (always include Pole Shape and Pole Size; include Version if available)
+  //   const requiredAttributes: { name: string; value: string }[] = [
+  //     { name: "Pole Shape", value: (selectedShapeToUse || "").trim() },
+  //     { name: "Pole Size", value: (selectedSizeToUse || "").trim() },
+  //   ];
+
+  //   if (selectedVersionToUse) {
+  //     requiredAttributes.push({ name: "Version", value: selectedVersionToUse });
+  //   }
+
+  //   // Find a variation that contains every required attribute (case-insensitive)
+  //   const matchedVariation = variations.find((variation, i) => {
+  //     console.log(`Variation #${i}:`, variation);
+  //     // console.log(`Variation #${i}:`, variation.attributes);
+  //     return requiredAttributes.every((req) =>
+  //       variation.attributes.some((attr) => {
+  //         const nameMatches =
+  //           attr.name.toLowerCase() === req.name.toLowerCase();
+  //         const optionMatches =
+  //           attr.option.toLowerCase() === req.value.toLowerCase();
+  //         if (nameMatches && optionMatches) {
+  //           console.log("Matched attribute:", attr);
+  //         }
+  //         return nameMatches && optionMatches;
+  //       })
+  //     );
+  //   });
+
+  //   console.log("Matched Variation:[BloxxPricing]", matchedVariation);
+
+  //   const variationId = matchedVariation ? matchedVariation.id : undefined;
+  //   console.log("variationId [BloxxPricing]", variationId);
+
+  //   setCartItem((prev) => ({
+  //     ...prev,
+  //     variation_id: variationId,
+  //     variations: [
+  //       { name: "Pole Shape", value: selectedShapeToUse || "Unknown" },
+  //       { name: "Pole Style", value: selectedStyleToUse || "Unknown" },
+  //       { name: "Pole Size", value: selectedSizeToUse || "Unknown" },
+  //       { name: "Version", value: selectedVersionToUse || "Unknown" },
+  //     ],
+  //   }));
+
+  //   calculatePrice(); // Recalculate price after updating cart item
+  // };
+
+  const updateCartItemWithVariationIds = (
+    selectedShapeParam?: string,
+    selectedSizeParam?: string,
+    selectedVersionParam?: string,
+    selectedStyleParam?: string | null
+  ) => {
+    const selectedShapeToUse = selectedShapeParam ?? selectedShape;
+    const selectedSizeToUse = selectedSizeParam ?? selectedSize;
+    const selectedVersionToUse = selectedVersionParam ?? selectedVersion;
+    const selectedStyleToUse = selectedStyleParam ?? selectedPoleStyle;
+
+    const selectedAttributes: any = []; // Array to hold selected attributes
+
+    if (selectedShapeToUse) {
+      selectedAttributes.push({
+        name: "Pole Shape",
+        value: selectedShapeToUse.trim(),
+      });
+    }
+    if (selectedSizeToUse) {
+      selectedAttributes.push({
+        name: "Pole Size",
+        value: selectedSizeToUse.trim(),
+      });
+    }
+    if (selectedVersionToUse) {
+      selectedAttributes.push({
+        name: "Version",
+        value: selectedVersionToUse.trim(),
+      });
+    }
+
+    console.log("Selected Attributes:", selectedAttributes); // Check the selected attributes
+
+    const matchedVariation = variations.find((variation) => {
+      return selectedAttributes.every((selectedAttr: any) =>
+        variation.attributes.some((variationAttr) => {
+          console.log("var name [BloxxPricing]", variationAttr.name);
+          console.log("selected name [BloxxPricing]", selectedAttr.name);
+
+          console.log("var option [BloxxPricing]", variationAttr.option);
+          console.log("selected option [BloxxPricing]", selectedAttr.value);
+          return (
+            variationAttr.name.toLowerCase().trim() ===
+              selectedAttr.name.toLowerCase().trim() &&
+            variationAttr.option.toLowerCase().trim() ===
+              selectedAttr.value.toLowerCase().trim()
+          );
+        })
+      );
+    });
+
+    // const matchedVariation = variations.find((variation) => {
+    //   return selectedAttributes.every((selectedAttr: any) =>
+    //     variation.attributes.some((variationAttr) => {
+    //       console.log("var name [BloxxPricing]", variationAttr.name);
+    //       console.log("selected name [BloxxPricing]", selectedAttr.name);
+
+    //       console.log("var option [BloxxPricing]", variationAttr.option);
+    //       console.log("selected option [BloxxPricing]", selectedAttr.value);
+    //       return (
+    //         variationAttr.name.toLowerCase() ===
+    //           selectedAttr.name.toLowerCase() &&
+    //         variationAttr.option.toLowerCase() ===
+    //           selectedAttr.value.toLowerCase()
+    //       );
+    //     })
+    //   );
+    // });
+
+    console.log("Matched Variation:[BloxxPricing]", matchedVariation);
+
+    const variationId = matchedVariation ? matchedVariation.id : undefined;
+    console.log("variationId [BloxxPricing]", variationId);
+
+    setCartItem((prev) => ({
+      ...prev,
+      variation_id: variationId,
+      variations: [
+        { name: "Pole Shape", value: selectedShapeToUse || "Unknown" },
+        { name: "Pole Style", value: selectedStyleToUse || "Unknown" },
+        { name: "Pole Size", value: selectedSizeToUse || "Unknown" },
+        { name: "Version", value: selectedVersionToUse || "Unknown" },
+      ],
+    }));
+
+    calculatePrice();
   };
 
   // ---------- HANDLER FUNCTIONS -------------------------------------------
 
   // Handle shape selection
   const handleShapeSelection = (shape: string) => {
-    setSelectedShape(shape); // Update the selected shape
-    filterOptionsByShape(shape); // Reset versions and sizes for the new shape
-
-    // Determine the default pole style based on the shape
-    let defaultStyle: string | null = null;
-    switch (shape.toLowerCase()) {
-      case "square":
-        defaultStyle = "square";
-        break;
-      case "round":
-        defaultStyle = "round";
-        break;
-      case "octagon":
-        defaultStyle = "round_octagon"; // Default for Octagon
-        break;
-      default:
-        defaultStyle = null;
-    }
-    setSelectedPoleStyle(defaultStyle);
-
-    // Ensure the first size option is selected as default
-    const defaultSize = filteredSizes.length > 0 ? filteredSizes[0] : "Unknown";
-    setSelectedSize(defaultSize);
-
-    // Update the cart item to reflect the selected shape, style, and size
-    setCartItem((prev) => {
-      const updatedVariations = [
-        ...(prev.variations || []).filter(
-          (v) => v.name !== "Pole Shape" && v.name !== "Pole Size"
-        ),
-        { name: "Pole Shape", value: shape },
-        { name: "Pole Size", value: defaultSize },
-      ];
-
-      return {
-        ...prev,
-        variations: updatedVariations,
-      };
-    });
+    setSelectedShape(shape);
+    filterOptionsByShape(shape);
+    updateCartItemWithVariationIds(shape);
   };
 
-  // Handle Pole Style Change
   const handlePoleStyleChange = (selectedStyle: string) => {
     setSelectedPoleStyle(selectedStyle);
 
@@ -413,42 +524,16 @@ const BloxxPricing = ({ onPriceChange, setCartItem }: BloxxPricingProps) => {
   // Handle Pole Size options
   const handleSizeSelection = (size: string) => {
     setSelectedSize(size);
-
     if (size !== "Other") {
-      setCustomSize(null); // Clear custom size if "Other" is not selected
-      setError(null); // Clear any validation error
+      setCustomSize(null);
+      setError(null);
     }
-
-    // Update cart item
-    setCartItem((prev) => {
-      const updatedVariations = [
-        ...(prev.variations || []).filter((v) => v.name !== "Pole Size"),
-        { name: "Pole Size", value: size },
-      ];
-
-      // If "Other" is selected, ensure customFields are reset
-      const updatedCustomFields = size === "Other" ? [] : prev.customFields;
-
-      return {
-        ...prev,
-        variations: updatedVariations,
-        customFields: updatedCustomFields,
-      };
-    });
+    updateCartItemWithVariationIds(undefined, size);
   };
 
-  // Handle Version Selection
   const handleVersionSelection = (version: string) => {
     setSelectedVersion(version);
-
-    // Update the cart item with the selected version
-    setCartItem((prev) => {
-      const updatedVariations = [
-        ...(prev.variations || []).filter((v) => v.name !== "Version"),
-        { name: "Version", value: version },
-      ];
-      return { ...prev, variations: updatedVariations };
-    });
+    updateCartItemWithVariationIds(undefined, undefined, version);
   };
 
   return (

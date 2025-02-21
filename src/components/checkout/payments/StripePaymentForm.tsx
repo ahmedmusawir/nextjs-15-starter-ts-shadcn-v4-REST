@@ -139,7 +139,7 @@ const StripePaymentForm = () => {
           if (updateResult) {
             // clearCart();
             // removeCoupon();
-            // router.push("/thankyou"); // Redirect after successful update
+            router.push("/thankyou"); // Redirect after successful update
           } else {
             setModalMessage("Order update failed. Please contact support.");
           }

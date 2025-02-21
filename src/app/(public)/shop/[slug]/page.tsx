@@ -59,6 +59,10 @@ const SingleProductPage = async ({
 
   // Detect the product category
   const customCategory = detectProductCategory(productWithVariations);
+  console.log(
+    "Product Variations [SingleProduct page]",
+    productWithVariations.variations
+  );
   // console.log("custom Category [SingleProduct page]", customCategory);
 
   // Fetch pole styles for Bloxx category

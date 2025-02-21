@@ -26,23 +26,11 @@ const SingleVariationPricing = ({
 
       // Set default selection
       if (data.length > 0) {
-        const defaultVariation = data[0];
-        const defaultOption = defaultVariation.attributes[0]?.option || null;
+        const defaultOption = data[0]?.attributes[0]?.option || null;
         setSelectedOption(defaultOption);
 
-        // Set initial price and update cart item with variation id
-        const defaultPrice = parseFloat(defaultVariation.price) || null;
-        onPriceChange(defaultPrice);
-        setCartItem((prev) => ({
-          ...prev,
-          variation_id: defaultVariation.id, // store the actual variation ID
-          variations: [
-            ...(prev.variations || []).filter(
-              (variation) => variation.name !== "Option"
-            ),
-            { name: "Option", value: defaultOption },
-          ],
-        }));
+        // Set initial price
+        onPriceChange(parseFloat(data[0]?.price) || null);
       }
     }
   }, [onPriceChange]);
@@ -89,11 +77,9 @@ const SingleVariationPricing = ({
     const price = matchedVariation ? parseFloat(matchedVariation.price) : null;
     onPriceChange(price);
 
-    // Update cart item with the selected option and its variation id
-    const variationId = matchedVariation ? matchedVariation.id : 0;
+    // Update cart item with the selected option
     setCartItem((prev) => ({
       ...prev,
-      variation_id: variationId,
       variations: [
         ...(prev.variations || []).filter(
           (variation) => variation.name !== "Option"

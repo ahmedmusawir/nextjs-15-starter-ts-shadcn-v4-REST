@@ -11,6 +11,7 @@ export interface CartItem {
     slug: string; // Category Slug
   }>; // Match the structure of product.categories
   basePrice: number; // Base price of the product
+  variation_id?: number;
   variations: Array<{
     name: string; // Variation name (e.g., "Pole Shape", "Size")
     value: string; // Selected variation value

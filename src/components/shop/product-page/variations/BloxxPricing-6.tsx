@@ -287,13 +287,7 @@ const BloxxPricing = ({ onPriceChange, setCartItem }: BloxxPricingProps) => {
 
   // Calculate current price when all selections are made
   const calculatePrice = () => {
-    let variationId = null;
-
     const matchedVariation = variations.find((variation) => {
-      console.log(
-        "Variation ID [BloxxPrice.tsx: calculatePrice]",
-        variation.id
-      );
       const shapeMatch = variation.attributes.find(
         (attr) => attr.name === "Pole Shape" && attr.option === selectedShape
       );
@@ -316,18 +310,9 @@ const BloxxPricing = ({ onPriceChange, setCartItem }: BloxxPricingProps) => {
     setCurrentPrice(price ? `$${price}` : "Select options");
     onPriceChange(price); // Pass the price to the parent component
 
-    if (matchedVariation) {
-      variationId = matchedVariation.id; // 2. Extract variation.id and store it
-      console.log(
-        "Extracted Variation ID [BloxxPrice.tsx: calculatePrice]:",
-        variationId
-      ); // Verification log
-    }
-
     // Update cart item with the calculated price
     setCartItem((prev) => ({
       ...prev,
-      variation_id: variationId || undefined,
       basePrice: price || 0,
       price: (price || 0) * prev.quantity,
     }));

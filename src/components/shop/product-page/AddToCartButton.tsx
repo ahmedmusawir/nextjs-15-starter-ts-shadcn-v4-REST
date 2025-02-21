@@ -13,6 +13,9 @@ const AddToCartButton = ({
 }: AddToCartButtonProps) => {
   const { cartItems, setIsCartOpen, setCartItems } = useCartStore();
 
+  // Testing
+  console.log("cartItems [AddToCartButton.tsx]", cartItems);
+
   // Check if the product is already in the cart
   const isProductInCart = cartItems.some((item) => item.id === cartItem.id);
 
