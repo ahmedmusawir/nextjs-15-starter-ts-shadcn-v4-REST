@@ -22,12 +22,9 @@ const StripePaymentForm = () => {
 
   // READ CHECKOUT DATA (e.g. total) FROM THE STORE
   const { checkoutData, removeCoupon } = useCheckoutStore();
-  const { setCartItems } = useCartStore();
+  const { clearCart } = useCartStore();
   const [orderInfo, setOrderInfo] = useState<any>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-
-  // CANCEL ORDER RELATED:
-  const [isCancelling, setIsCancelling] = useState(false);
 
   //Early return if stripe isn't loaded.
   if (!stripe) {
@@ -35,7 +32,6 @@ const StripePaymentForm = () => {
     return <div>Loading Payment...</div>; // Or a spinner
   }
 
-  // Order submission to woocom backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;
@@ -82,30 +78,22 @@ const StripePaymentForm = () => {
       console.log("Simplified Order Object:", orderObject);
 
       localStorage.setItem("latestOrder", JSON.stringify(orderObject)); // Persist the order
-      setOrderInfo(orderObject);
-      setModalMessage("Processing Payment...");
-      setIsOrderModalOpen(true);
+      setOrderInfo(orderObject); // This is the CRITICAL fix
 
-      // Call processPayment and check its return value
-      const paymentSuccess = await processPayment(elements, orderObject);
-      if (!paymentSuccess) {
-        return; // Exit if payment failed
-      }
+      setModalMessage("Processing Payment...");
+      setIsOrderModalOpen(true); // Open the modal
+
+      // Proceed to payment *after* orderInfo is updated in state.
+      await processPayment(elements, orderObject); // Call a separate async function
     } catch (err) {
       console.error("Error submitting order:", err);
       setError("Order submission encountered an error. Please try again.");
-      setIsProcessing(false); // VERY IMPORTANT: Stop processing on error
-      setIsOrderModalOpen(true); // Show the modal on error
-      setModalMessage("Order creation failed. Please try again."); // Set an appropriate error message
+      setIsProcessing(false);
     }
-    // No finally block
+    // No finally block needed anymore, as isProcessing is handled in each case.
   };
 
-  // Process Stripe Payments making calls to Stripe API
-  const processPayment = async (
-    elements: any,
-    orderInfo: OrderSummary
-  ): Promise<boolean> => {
+  const processPayment = async (elements: any, orderInfo: OrderSummary) => {
     // Payment submission function
     console.log(
       "checkout total: [StripePaymentForm.tsx - processPayment]",
@@ -123,103 +111,60 @@ const StripePaymentForm = () => {
       });
       const { clientSecret } = await response.json();
 
-      try {
-        // <--- Inner try...catch block for stripe.confirmPayment
-        const result = await stripe.confirmPayment({
-          elements,
-          clientSecret,
-          confirmParams: {
-            return_url: `${SITE_URL}/thankyou`,
-          },
-          redirect: "if_required",
-        });
+      const result = await stripe.confirmPayment({
+        elements,
+        clientSecret,
+        confirmParams: {
+          return_url: ``, // Restore the correct return URL
+          // return_url: `${SITE_URL}/thankyou`, // Restore the correct return URL
+        },
+        // redirect: "if_required", // Add this line back
+      });
 
-        if (result.error) {
-          // ---  HANDLE PAYMENT FAILURE ---
-          setModalMessage("Sorry, Payment Failed... please cancel or retry!");
-          setError(result.error.message || "Payment Failed");
-          setIsProcessing(false);
-          return false; // Return false on failure
-        } else if (
-          result.paymentIntent &&
-          result.paymentIntent.status === "succeeded"
-        ) {
-          setModalMessage("Payment successful. Updating order...");
+      if (result.error) {
+        // ---  HANDLE PAYMENT FAILURE ---
+        setModalMessage("Sorry, Payment Failed... please contact support");
+        setError(result.error.message || "Payment Failed"); // Store the error
+        setIsProcessing(false); // Stop the spinner
+        // setIsOrderModalOpen(false);  // DON'T close the modal on failure
+      } else if (
+        result.paymentIntent &&
+        result.paymentIntent.status === "succeeded"
+      ) {
+        setModalMessage("Payment successful. Updating order...");
 
-          try {
-            const updateResult = await updateWoocomOrder(
-              orderInfo.id,
-              "processing"
-            );
-            if (updateResult) {
-              router.push("/thankyou"); // Keep the redirect
-              return true; // Return true *after* the successful redirect
-            } else {
-              setModalMessage("Order update failed. Please contact support.");
-              setIsProcessing(false);
-              return false; // Return false if the order update fails
-            }
-          } catch (orderUpdateError) {
-            console.error("Order update error:", orderUpdateError);
+        try {
+          const updateResult = await updateWoocomOrder(
+            orderInfo.id,
+            "processing"
+          ); // Use orderInfo.id here
+          if (updateResult) {
+            router.push("/thankyou"); // Redirect after successful update
+          } else {
             setModalMessage("Order update failed. Please contact support.");
-            setIsProcessing(false);
-            return false; // Return false on order update error
+            setIsProcessing(false); // Stop processing if update failed
           }
-        } else if (
-          result.paymentIntent &&
-          result.paymentIntent.status === "requires_action"
-        ) {
-          setModalMessage("Payment requires additional action...");
-          setIsProcessing(false); //Might require addtional action
-          return false; // Return false - not a success (yet)
-        } else {
-          console.log("Payment status:", result.paymentIntent?.status);
-          setModalMessage("Unexpected payment status. Please contact support.");
+        } catch (orderUpdateError) {
+          console.error("Order update error:", orderUpdateError);
+          setModalMessage("Order update failed. Please contact support.");
           setIsProcessing(false);
-          return false; // Return false for unexpected statuses
         }
-      } catch (stripeConfirmPaymentError) {
-        // <--- Catch specifically stripe.confirmPayment errors
-        console.error(
-          "Stripe confirmPayment error:",
-          stripeConfirmPaymentError
-        );
-        setModalMessage(
-          "Stripe Payment confirmPayment failed. Please contact support."
-        ); // More specific message
-        setError("Stripe Payment confirmPayment failed.");
+      } else if (
+        result.paymentIntent &&
+        result.paymentIntent.status === "requires_action"
+      ) {
+        setModalMessage("Payment requires additional action...");
+        setIsProcessing(false); //Might require addtional action
+      } else {
+        console.log("Payment status:", result.paymentIntent?.status);
+        setModalMessage("Unexpected payment status. Please contact support.");
         setIsProcessing(false);
-        return false; // Indicate payment processing failed
       }
     } catch (error) {
-      // <--- Original catch block for other errors (like fetch)
       console.error("Payment error:", error);
       setModalMessage("Payment failed. Please contact support.");
-      setIsProcessing(false);
+      setIsProcessing(false); // Stop processing if fetch fails
       setError("Payment failed.");
-      return false; // Return false on fetch/general error
-    }
-  };
-
-  // Handler to cancel the order in WooCommerce, clear cart, and redirect
-  const handleCancelOrder = async () => {
-    setIsCancelling(true);
-    try {
-      const result = await updateWoocomOrder(orderInfo.id, "cancelled");
-      if (!result) {
-        console.error("Failed to cancel order on backend.");
-        // You might show an error message or keep the modal open
-        setIsCancelling(false);
-        return;
-      }
-      // If cancellation succeeded, clear the cart & redirect
-      setCartItems([]);
-      removeCoupon();
-      router.push("/shop");
-    } catch (error) {
-      console.error("Error cancelling order:", error);
-    } finally {
-      setIsCancelling(false);
     }
   };
 
@@ -274,23 +219,15 @@ const StripePaymentForm = () => {
             )}
             {/*  Show Cancel button when NOT processing AND there's an error */}
             {!isProcessing && error && (
-              <>
-                <button
-                  onClick={handleCancelOrder}
-                  className="px-4 py-2 mr-5 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                >
-                  Cancel Order
-                </button>
-
-                <button
-                  onClick={() => {
-                    setIsOrderModalOpen(false); // Close the modal
-                  }}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-red-700 transition"
-                >
-                  Retry
-                </button>
-              </>
+              <button
+                onClick={() => {
+                  setIsOrderModalOpen(false); // Close the modal
+                  // Add any cancel order logic here.
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+              >
+                Cancel Order
+              </button>
             )}
           </div>
         </div>
