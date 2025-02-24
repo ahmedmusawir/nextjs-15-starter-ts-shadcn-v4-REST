@@ -8,6 +8,7 @@ import RightPane from "@/components/checkout/right-pane/RightPane";
 import Spinner from "@/components/common/Spinner";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { useCheckoutStore } from "@/store/useCheckoutStore";
 
 // Load Stripe using your publishable key (exposed with NEXT_PUBLIC_ prefix)
 const stripePromise = loadStripe(
@@ -15,10 +16,16 @@ const stripePromise = loadStripe(
 );
 
 const CheckoutPageContent = () => {
+  const SITE_URL = process.env.NEXT_PUBLIC_APP_URL;
+
   const router = useRouter();
   const cartItems = useCartStore((state) => state.cartItems);
   const [mounted, setMounted] = useState(false);
   const [clientSecret, setClientSecret] = useState<string>("");
+
+  // From our checkout store, get the stored PaymentIntent client secret and setter.
+  const { paymentIntentClientSecret, setPaymentIntentClientSecret } =
+    useCheckoutStore();
 
   useEffect(() => {
     setMounted(true);
@@ -34,29 +41,34 @@ const CheckoutPageContent = () => {
   useEffect(() => {
     const fetchClientSecret = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:3000/api/create-payment-intent",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              amount: 5000, // $50.00 in cents
-              currency: "usd",
-            }),
-          }
-        );
+        // If we already have a stored client secret, use it.
+        if (paymentIntentClientSecret) {
+          setClientSecret(paymentIntentClientSecret);
+          return;
+        }
+        // Otherwise, create a new PaymentIntent.
+        const response = await fetch(`${SITE_URL}/api/create-payment-intent`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            // Pass real order data here:
+            amount: 52, // e.g. $0.52 in cents
+            currency: "usd",
+          }),
+        });
         const data = await response.json();
         setClientSecret(data.clientSecret);
+        // Store the client secret in Zustand for later reuse.
+        setPaymentIntentClientSecret(data.clientSecret);
       } catch (error) {
         console.error("Error fetching client secret:", error);
       }
     };
 
     fetchClientSecret();
-  }, []);
+  }, [SITE_URL, paymentIntentClientSecret, setPaymentIntentClientSecret]);
 
-  if (!mounted) return <Spinner />;
-  if (!clientSecret) return <Spinner />;
+  if (!mounted || !clientSecret) return <Spinner />;
 
   return (
     <Elements stripe={stripePromise} options={{ clientSecret }}>

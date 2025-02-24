@@ -160,6 +160,12 @@ const StripePaymentForm = () => {
     }
   };
 
+  // Inside StripePaymentForm, at the VERY TOP:
+  if (!stripe) {
+    console.log("Stripe is not loaded yet (early return)"); // Add this log
+    return <div>Loading Payment...</div>; // OR a spinner, OR an error.  Don't render the form!
+  }
+
   return (
     <>
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -169,12 +175,20 @@ const StripePaymentForm = () => {
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <button
+        {/* <button
           type="submit"
           disabled={!stripe || isProcessing}
           className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700"
         >
           {isProcessing ? "Processing..." : "Place Order"}
+        </button> */}
+
+        <button
+          type="submit"
+          disabled={!stripe || isProcessing} //ensure stripe is available
+          className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700"
+        >
+            {isProcessing ? "Processing..." : "Place Order"}
         </button>
       </form>
 

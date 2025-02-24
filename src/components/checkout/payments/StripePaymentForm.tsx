@@ -137,8 +137,6 @@ const StripePaymentForm = () => {
             "processing"
           ); // Use orderInfo.id here
           if (updateResult) {
-            // clearCart();
-            // removeCoupon();
             router.push("/thankyou"); // Redirect after successful update
           } else {
             setModalMessage("Order update failed. Please contact support.");
@@ -162,6 +160,12 @@ const StripePaymentForm = () => {
     }
   };
 
+  // Inside StripePaymentForm, at the VERY TOP:
+  if (!stripe) {
+    console.log("Stripe is not loaded yet (early return)"); // Add this log
+    return <div>Loading Payment...</div>; // OR a spinner, OR an error.  Don't render the form!
+  }
+
   return (
     <>
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -171,59 +175,14 @@ const StripePaymentForm = () => {
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <button
+        {/* <button
           type="submit"
           disabled={!stripe || isProcessing}
           className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700"
         >
           {isProcessing ? "Processing..." : "Place Order"}
-        </button>
+        </button> */}
       </form>
-
-      {/* Payment processing modal */}
-      {isOrderModalOpen && orderInfo && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-md max-w-md w-full text-center">
-            <h2 className="text-lg font-bold mb-4">Order Processing</h2>
-            <p className="text-sm text-gray-700 mb-4">{modalMessage}</p>
-            {/* Placeholder spinner */}
-            <div className="mb-4">
-              <svg
-                className="animate-spin h-6 w-6 text-indigo-600 mx-auto"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z"
-                ></path>
-              </svg>
-            </div>
-            {/* In case of failure, display a Cancel Order button */}
-            {modalMessage.includes("Failed") && (
-              <button
-                onClick={() => {
-                  // Call cancel order logic here if needed, then close modal.
-                  setIsOrderModalOpen(false);
-                }}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-              >
-                Cancel Order
-              </button>
-            )}
-          </div>
-        </div>
-      )}
     </>
   );
 };
